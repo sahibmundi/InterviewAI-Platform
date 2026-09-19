@@ -10,6 +10,8 @@ InterviewAI is an AI interview preparation studio that helps candidates practice
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- First-time Replit setup: install dependencies with `pnpm install`, run `pnpm --filter @workspace/db run push`, and use the managed `artifacts/interview-ai: web` and `artifacts/api-server: API Server` workflows.
+- Authentication uses the Replit-managed Clerk setup; do not replace the generated Clerk secrets or add bearer-token handling to browser requests.
 
 ## Stack
 
