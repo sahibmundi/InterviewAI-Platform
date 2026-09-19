@@ -122,6 +122,15 @@ export const InterviewSummaryDifficulty = {
   advanced: 'advanced',
 } as const;
 
+export type InterviewSummaryStatus = typeof InterviewSummaryStatus[keyof typeof InterviewSummaryStatus];
+
+
+export const InterviewSummaryStatus = {
+  ready: 'ready',
+  in_progress: 'in_progress',
+  completed: 'completed',
+} as const;
+
 export interface InterviewSummary {
   id: string;
   title: string;
@@ -134,6 +143,7 @@ export interface InterviewSummary {
   score: number;
   /** @minimum 1 */
   questions: number;
+  status: InterviewSummaryStatus;
   completedAt: string;
   duration: string;
 }
@@ -250,6 +260,40 @@ export type Interview = InterviewSummary & {
   weakAreas: string[];
   recommendedTopics: string[];
 };
+
+export interface InterviewQuestion {
+  /** @minimum 0 */
+  index: number;
+  prompt: string;
+  category: string;
+}
+
+export interface InterviewAnswer {
+  /** @minimum 0 */
+  questionIndex: number;
+  answer: string;
+  submittedAt: string;
+}
+
+export interface InterviewAnswerInput {
+  /** @minimum 0 */
+  questionIndex: number;
+  /** @minLength 1 */
+  answer: string;
+}
+
+export interface InterviewSession {
+  interview: Interview;
+  currentQuestion: InterviewQuestion | null;
+  /** @minimum 0 */
+  currentQuestionIndex: number;
+  /** @minimum 0 */
+  answeredCount: number;
+  /** @minimum 1 */
+  totalQuestions: number;
+  answers: InterviewAnswer[];
+  completed: boolean;
+}
 
 export type ListInterviewsParams = {
 type?: ListInterviewsType;

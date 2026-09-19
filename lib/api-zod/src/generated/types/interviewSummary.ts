@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { InterviewSummaryDifficulty } from './interviewSummaryDifficulty';
+import type { InterviewSummaryStatus } from './interviewSummaryStatus';
 import type { InterviewSummaryType } from './interviewSummaryType';
 
 export interface InterviewSummary {
@@ -20,6 +21,7 @@ export interface InterviewSummary {
   score: number;
   /** @minimum 1 */
   questions: number;
+  status: InterviewSummaryStatus;
   completedAt: Date;
   duration: string;
 }

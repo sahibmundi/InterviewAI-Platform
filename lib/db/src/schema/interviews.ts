@@ -20,6 +20,7 @@ export const interviewsTable = pgTable("interviews", {
   completedAt: timestamp("completed_at", { withTimezone: true }),
   categoryScores: text("category_scores").notNull().default("{}"),
   questionsAsked: text("questions_asked").array().notNull().default([]),
+  answers: text("answers").notNull().default("[]"),
   strongAreas: text("strong_areas").array().notNull().default([]),
   weakAreas: text("weak_areas").array().notNull().default([]),
   recommendedTopics: text("recommended_topics").array().notNull().default([]),

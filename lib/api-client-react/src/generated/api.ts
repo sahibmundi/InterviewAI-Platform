@@ -24,7 +24,9 @@ import type {
   Dashboard,
   HealthStatus,
   Interview,
+  InterviewAnswerInput,
   InterviewInput,
+  InterviewSession,
   InterviewSummary,
   ListInterviewsParams,
   ProfileUpdate
@@ -626,4 +628,170 @@ export function useGetInterview<TData = Awaited<ReturnType<typeof getInterview>>
 
 
 
+
+export const getGetInterviewSessionUrl = (interviewId: string,) => {
+
+
+
+
+  return `/api/interviews/${interviewId}/session`
+}
+
+/**
+ * @summary Get the active interview session
+ */
+export const getInterviewSession = async (interviewId: string, options?: Parameters<typeof customFetch>[1]): Promise<InterviewSession> => {
+
+  return customFetch<InterviewSession>(getGetInterviewSessionUrl(interviewId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetInterviewSessionQueryKey = (interviewId: string,) => {
+    return [
+    `/api/interviews/${interviewId}/session`
+    ] as const;
+    }
+
+
+export const getGetInterviewSessionQueryOptions = <TData = Awaited<ReturnType<typeof getInterviewSession>>, TError = ErrorType<void>>(interviewId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInterviewSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetInterviewSessionQueryKey(interviewId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInterviewSession>>> = ({ signal }) => getInterviewSession(interviewId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: interviewId !== null && interviewId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInterviewSession>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetInterviewSessionQueryResult = NonNullable<Awaited<ReturnType<typeof getInterviewSession>>>
+export type GetInterviewSessionQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the active interview session
+ */
+
+export function useGetInterviewSession<TData = Awaited<ReturnType<typeof getInterviewSession>>, TError = ErrorType<void>>(
+ interviewId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInterviewSession>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetInterviewSessionQueryOptions(interviewId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSubmitInterviewAnswerUrl = (interviewId: string,) => {
+
+
+
+
+  return `/api/interviews/${interviewId}/answers`
+}
+
+/**
+ * @summary Submit an answer for the active interview question
+ */
+export const submitInterviewAnswer = async (interviewId: string,
+    interviewAnswerInput: InterviewAnswerInput, options?: Parameters<typeof customFetch>[1]): Promise<InterviewSession> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<InterviewSession>(getSubmitInterviewAnswerUrl(interviewId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(interviewAnswerInput)
+  }
+);}
+
+
+
+
+
+export const getSubmitInterviewAnswerMutationKey = () => ['submitInterviewAnswer'] as const;
+
+export const getSubmitInterviewAnswerMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitInterviewAnswer>>, TError,SubmitInterviewAnswerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitInterviewAnswer>>, TError,SubmitInterviewAnswerMutationVariables, TContext> => {
+
+const mutationKey = getSubmitInterviewAnswerMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitInterviewAnswer>>, SubmitInterviewAnswerMutationVariables> = (props) => {
+          const {interviewId,data} = props ?? {};
+
+          return  submitInterviewAnswer(interviewId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitInterviewAnswerMutationResult = NonNullable<Awaited<ReturnType<typeof submitInterviewAnswer>>>
+    export type SubmitInterviewAnswerMutationBody = BodyType<InterviewAnswerInput>
+    export type SubmitInterviewAnswerMutationError = ErrorType<void>
+    export type SubmitInterviewAnswerMutationVariables = {interviewId: string;data: BodyType<InterviewAnswerInput>}
+
+    /**
+ * @summary Submit an answer for the active interview question
+ */
+export const useSubmitInterviewAnswer = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitInterviewAnswer>>, TError,SubmitInterviewAnswerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitInterviewAnswer>>,
+        TError,
+        SubmitInterviewAnswerMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSubmitInterviewAnswerMutationOptions(options));
+    }
 

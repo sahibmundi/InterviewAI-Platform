@@ -96,6 +96,7 @@ export const GetDashboardResponse = zod.object({
   "difficulty": zod.enum(['beginner', 'intermediate', 'advanced']),
   "score": zod.number().int().min(getDashboardResponseRecentInterviewsItemScoreMin).max(getDashboardResponseRecentInterviewsItemScoreMax),
   "questions": zod.number().int().min(1),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
   "completedAt": zod.coerce.date(),
   "duration": zod.string()
 }))
@@ -206,6 +207,7 @@ export const ListInterviewsResponseItem = zod.object({
   "difficulty": zod.enum(['beginner', 'intermediate', 'advanced']),
   "score": zod.number().int().min(listInterviewsResponseScoreMin).max(listInterviewsResponseScoreMax),
   "questions": zod.number().int().min(1),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
   "completedAt": zod.coerce.date(),
   "duration": zod.string()
 })
@@ -236,6 +238,7 @@ export const CreateInterviewResponse = zod.object({
   "difficulty": zod.enum(['beginner', 'intermediate', 'advanced']),
   "score": zod.number().int().min(createInterviewResponseOneScoreMin).max(createInterviewResponseOneScoreMax),
   "questions": zod.number().int().min(1),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
   "completedAt": zod.coerce.date(),
   "duration": zod.string()
 }).and(zod.object({
@@ -270,6 +273,7 @@ export const GetInterviewResponse = zod.object({
   "difficulty": zod.enum(['beginner', 'intermediate', 'advanced']),
   "score": zod.number().int().min(getInterviewResponseOneScoreMin).max(getInterviewResponseOneScoreMax),
   "questions": zod.number().int().min(1),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
   "completedAt": zod.coerce.date(),
   "duration": zod.string()
 }).and(zod.object({
@@ -282,5 +286,135 @@ export const GetInterviewResponse = zod.object({
   "weakAreas": zod.array(zod.string()),
   "recommendedTopics": zod.array(zod.string())
 }))
+
+
+/**
+ * @summary Get the active interview session
+ */
+export const GetInterviewSessionParams = zod.object({
+  "interviewId": zod.coerce.string()
+})
+
+export const getInterviewSessionResponseInterviewOneScoreMin = 0;
+export const getInterviewSessionResponseInterviewOneScoreMax = 100;
+
+
+export const getInterviewSessionResponseCurrentQuestionOneIndexMin = 0;
+
+export const getInterviewSessionResponseCurrentQuestionIndexMin = 0;
+
+export const getInterviewSessionResponseAnsweredCountMin = 0;
+
+
+export const getInterviewSessionResponseAnswersItemQuestionIndexMin = 0;
+
+
+
+export const GetInterviewSessionResponse = zod.object({
+  "interview": zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "type": zod.enum(['technical', 'hr', 'behavioral', 'project', 'coding', 'mixed']),
+  "difficulty": zod.enum(['beginner', 'intermediate', 'advanced']),
+  "score": zod.number().int().min(getInterviewSessionResponseInterviewOneScoreMin).max(getInterviewSessionResponseInterviewOneScoreMax),
+  "questions": zod.number().int().min(1),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
+  "completedAt": zod.coerce.date(),
+  "duration": zod.string()
+}).and(zod.object({
+  "answerMode": zod.enum(['text', 'voice']),
+  "source": zod.enum(['general', 'resume', 'job_description', 'resume_and_job_description']),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
+  "categoryScores": zod.record(zod.string(), zod.number().int()),
+  "questionsAsked": zod.array(zod.string()),
+  "strongAreas": zod.array(zod.string()),
+  "weakAreas": zod.array(zod.string()),
+  "recommendedTopics": zod.array(zod.string())
+})),
+  "currentQuestion": zod.union([zod.object({
+  "index": zod.number().int().min(getInterviewSessionResponseCurrentQuestionOneIndexMin),
+  "prompt": zod.string(),
+  "category": zod.string()
+}),zod.null()]),
+  "currentQuestionIndex": zod.number().int().min(getInterviewSessionResponseCurrentQuestionIndexMin),
+  "answeredCount": zod.number().int().min(getInterviewSessionResponseAnsweredCountMin),
+  "totalQuestions": zod.number().int().min(1),
+  "answers": zod.array(zod.object({
+  "questionIndex": zod.number().int().min(getInterviewSessionResponseAnswersItemQuestionIndexMin),
+  "answer": zod.string(),
+  "submittedAt": zod.coerce.date()
+})),
+  "completed": zod.boolean()
+})
+
+
+/**
+ * @summary Submit an answer for the active interview question
+ */
+export const SubmitInterviewAnswerParams = zod.object({
+  "interviewId": zod.coerce.string()
+})
+
+export const submitInterviewAnswerBodyQuestionIndexMin = 0;
+
+
+
+
+export const SubmitInterviewAnswerBody = zod.object({
+  "questionIndex": zod.number().int().min(submitInterviewAnswerBodyQuestionIndexMin),
+  "answer": zod.string().min(1)
+})
+
+export const submitInterviewAnswerResponseInterviewOneScoreMin = 0;
+export const submitInterviewAnswerResponseInterviewOneScoreMax = 100;
+
+
+export const submitInterviewAnswerResponseCurrentQuestionOneIndexMin = 0;
+
+export const submitInterviewAnswerResponseCurrentQuestionIndexMin = 0;
+
+export const submitInterviewAnswerResponseAnsweredCountMin = 0;
+
+
+export const submitInterviewAnswerResponseAnswersItemQuestionIndexMin = 0;
+
+
+
+export const SubmitInterviewAnswerResponse = zod.object({
+  "interview": zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "type": zod.enum(['technical', 'hr', 'behavioral', 'project', 'coding', 'mixed']),
+  "difficulty": zod.enum(['beginner', 'intermediate', 'advanced']),
+  "score": zod.number().int().min(submitInterviewAnswerResponseInterviewOneScoreMin).max(submitInterviewAnswerResponseInterviewOneScoreMax),
+  "questions": zod.number().int().min(1),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
+  "completedAt": zod.coerce.date(),
+  "duration": zod.string()
+}).and(zod.object({
+  "answerMode": zod.enum(['text', 'voice']),
+  "source": zod.enum(['general', 'resume', 'job_description', 'resume_and_job_description']),
+  "status": zod.enum(['ready', 'in_progress', 'completed']),
+  "categoryScores": zod.record(zod.string(), zod.number().int()),
+  "questionsAsked": zod.array(zod.string()),
+  "strongAreas": zod.array(zod.string()),
+  "weakAreas": zod.array(zod.string()),
+  "recommendedTopics": zod.array(zod.string())
+})),
+  "currentQuestion": zod.union([zod.object({
+  "index": zod.number().int().min(submitInterviewAnswerResponseCurrentQuestionOneIndexMin),
+  "prompt": zod.string(),
+  "category": zod.string()
+}),zod.null()]),
+  "currentQuestionIndex": zod.number().int().min(submitInterviewAnswerResponseCurrentQuestionIndexMin),
+  "answeredCount": zod.number().int().min(submitInterviewAnswerResponseAnsweredCountMin),
+  "totalQuestions": zod.number().int().min(1),
+  "answers": zod.array(zod.object({
+  "questionIndex": zod.number().int().min(submitInterviewAnswerResponseAnswersItemQuestionIndexMin),
+  "answer": zod.string(),
+  "submittedAt": zod.coerce.date()
+})),
+  "completed": zod.boolean()
+})
 
 

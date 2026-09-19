@@ -147,6 +147,58 @@ paths:
           description: Interview not found
         "401":
           description: Authentication required
+  /interviews/{interviewId}/session:
+    get:
+      operationId: getInterviewSession
+      tags: [interviews]
+      summary: Get the active interview session
+      parameters:
+        - name: interviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active interview session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewSession"
+        "404":
+          description: Interview not found
+        "401":
+          description: Authentication required
+  /interviews/{interviewId}/answers:
+    post:
+      operationId: submitInterviewAnswer
+      tags: [interviews]
+      summary: Submit an answer for the active interview question
+      parameters:
+        - name: interviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewAnswerInput"
+      responses:
+        "200":
+          description: Updated interview session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewSession"
+        "400":
+          description: Invalid answer
+        "404":
+          description: Interview not found
+        "401":
+          description: Authentication required
 components:
   schemas:
     HealthStatus:
@@ -309,12 +361,15 @@ components:
         questions:
           type: integer
           minimum: 1
+        status:
+          type: string
+          enum: [ready, in_progress, completed]
         completedAt:
           type: string
           format: date-time
         duration:
           type: string
-      required: [id, title, type, difficulty, score, questions, completedAt, duration]
+      required: [id, title, type, difficulty, score, questions, status, completedAt, duration]
     Dashboard:
       type: object
       properties:
@@ -401,4 +456,62 @@ components:
               items:
                 type: string
           required: [answerMode, source, status, categoryScores, questionsAsked, strongAreas, weakAreas, recommendedTopics]
+    InterviewQuestion:
+      type: object
+      properties:
+        index:
+          type: integer
+          minimum: 0
+        prompt:
+          type: string
+        category:
+          type: string
+      required: [index, prompt, category]
+    InterviewAnswer:
+      type: object
+      properties:
+        questionIndex:
+          type: integer
+          minimum: 0
+        answer:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+      required: [questionIndex, answer, submittedAt]
+    InterviewAnswerInput:
+      type: object
+      properties:
+        questionIndex:
+          type: integer
+          minimum: 0
+        answer:
+          type: string
+          minLength: 1
+      required: [questionIndex, answer]
+    InterviewSession:
+      type: object
+      properties:
+        interview:
+          $ref: "#/components/schemas/Interview"
+        currentQuestion:
+          oneOf:
+            - $ref: "#/components/schemas/InterviewQuestion"
+            - type: "null"
+        currentQuestionIndex:
+          type: integer
+          minimum: 0
+        answeredCount:
+          type: integer
+          minimum: 0
+        totalQuestions:
+          type: integer
+          minimum: 1
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterviewAnswer"
+        completed:
+          type: boolean
+      required: [interview, currentQuestion, currentQuestionIndex, answeredCount, totalQuestions, answers, completed]
 
