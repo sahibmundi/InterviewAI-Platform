@@ -1,0 +1,1 @@
+- [Imported workspace setup](imported-workspace-setup.md) — install the pnpm workspace dependencies and configure Clerk secrets before restarting artifact workflows.

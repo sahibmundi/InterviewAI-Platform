@@ -20,6 +20,7 @@ import { Route, Switch, Link, Redirect, useLocation, useParams, Router as Wouter
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { InterviewReadinessPage, QuestionBankPage, StudyPlanPage } from '@/pages/preparation';
 
 const queryClient = new QueryClient();
 const clerkPubKey = publishableKeyFromHost(
@@ -88,6 +89,9 @@ function AppShell({ children }: { children: ReactNode }) {
   const nav = [
     { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     { href: '/interviews', label: 'Interviews', icon: Headphones },
+    { href: '/readiness', label: 'Interview Readiness', icon: BriefcaseBusiness },
+    { href: '/question-bank', label: 'Question Bank', icon: BookOpen },
+    { href: '/study-plan', label: 'Study Plan', icon: GraduationCap },
     { href: '/profile', label: 'Profile', icon: UserRound },
   ];
   return <div className="noise min-h-[100dvh] bg-background">
@@ -97,8 +101,8 @@ function AppShell({ children }: { children: ReactNode }) {
     </header>
     <aside className="fixed inset-y-0 left-0 hidden w-[248px] flex-col bg-sidebar px-5 py-6 lg:flex">
       <Logo inverse />
-      <div className="mt-12 px-3 font-mono-ui text-[10px] uppercase tracking-[.2em] text-sidebar-foreground/40">Your practice room</div>
-      <nav className="mt-3 space-y-1.5" data-testid="nav-sidebar">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={cn('group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors', location === href ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground')} data-testid={`link-sidebar-${label.toLowerCase()}`}><Icon className="size-[18px] transition-transform group-hover:scale-110" />{label}</Link>)}</nav>
+       <div className="mt-12 px-3 font-mono-ui text-[10px] uppercase tracking-[.2em] text-sidebar-foreground/40">Your practice room</div>
+       <nav className="mt-3 space-y-1.5" data-testid="nav-sidebar">{nav.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className={cn('group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors', location === href ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground')} data-testid={`link-sidebar-${label.toLowerCase().replaceAll(' ', '-')}`}><Icon className="size-[18px] transition-transform group-hover:scale-110" />{label}</Link>)}</nav>
       <div className="mt-auto rounded-2xl border border-sidebar-border bg-sidebar-accent/50 p-4"><div className="flex items-start gap-3"><Sparkles className="mt-0.5 size-4 text-sidebar-primary" /><div><p className="text-sm font-semibold text-sidebar-foreground">Practice with intent.</p><p className="mt-1 text-xs leading-5 text-sidebar-foreground/55">One focused session beats an hour of scrolling.</p></div></div><Link href="/interviews/new" className="mt-4 flex min-h-10 items-center justify-center rounded-lg bg-sidebar-primary px-3 text-xs font-bold text-sidebar-primary-foreground hover:brightness-105" data-testid="link-sidebar-new-interview">Start practice</Link></div>
       <div className="mt-5 flex items-center gap-3 border-t border-sidebar-border pt-5"><div className="grid size-9 place-items-center rounded-full bg-sidebar-primary font-mono-ui text-xs font-bold text-sidebar-primary-foreground" data-testid="text-sidebar-avatar">AR</div><div className="min-w-0"><p className="truncate text-sm font-semibold text-sidebar-foreground">Alex Rivera</p><p className="truncate text-xs text-sidebar-foreground/45">Software candidate</p></div><Link href="/profile" className="ml-auto text-sidebar-foreground/50 hover:text-sidebar-foreground" data-testid="link-sidebar-settings"><Settings className="size-4" /></Link></div>
     </aside>
@@ -389,7 +393,7 @@ function NotFoundPage() {
 
 function Router() {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={HomeRedirect} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route path="/dashboard" component={() => <Protected><DashboardPage /></Protected>} /><Route path="/profile" component={() => <Protected><ProfilePage /></Protected>} /><Route path="/interviews/new" component={() => <Protected><InterviewNewPage /></Protected>} /><Route path="/interviews/:interviewId/session" component={() => <Protected><InterviewSessionPage /></Protected>} /><Route path="/interviews/:interviewId" component={() => <Protected><InterviewDetailPage /></Protected>} /><Route path="/interviews" component={() => <Protected><InterviewsPage /></Protected>} /><Route component={NotFoundPage} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={HomeRedirect} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route path="/dashboard" component={() => <Protected><DashboardPage /></Protected>} /><Route path="/readiness" component={() => <Protected><AppShell><InterviewReadinessPage /></AppShell></Protected>} /><Route path="/question-bank" component={() => <Protected><AppShell><QuestionBankPage /></AppShell></Protected>} /><Route path="/study-plan" component={() => <Protected><AppShell><StudyPlanPage /></AppShell></Protected>} /><Route path="/profile" component={() => <Protected><ProfilePage /></Protected>} /><Route path="/interviews/new" component={() => <Protected><InterviewNewPage /></Protected>} /><Route path="/interviews/:interviewId/session" component={() => <Protected><InterviewSessionPage /></Protected>} /><Route path="/interviews/:interviewId" component={() => <Protected><InterviewDetailPage /></Protected>} /><Route path="/interviews" component={() => <Protected><InterviewsPage /></Protected>} /><Route component={NotFoundPage} /></Switch></ErrorBoundary>;
 }
 
 function ClerkProviderWithRoutes() {

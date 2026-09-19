@@ -1,0 +1,655 @@
+We already have an existing InterviewAI project in Replit.
+
+IMPORTANT: **Do NOT rebuild the project from scratch. Do NOT remove or break the currently working Interview Questions feature.** Modify and extend the existing application.
+
+The current dashboard has only one functional feature: **Interview Questions**.
+
+Now upgrade the application into a complete, polished **AI Interview Preparation & Career Readiness Platform**.
+
+---
+
+# 1. VOICE-FIRST AI INTERVIEW
+
+The interview system should support both **voice input and voice output**.
+
+### AI interviewer
+
+The AI should speak the question aloud using Text-to-Speech.
+
+The user should be able to answer using their microphone.
+
+Flow:
+
+**AI speaks → User speaks → Speech-to-Text → AI evaluates → Next question**
+
+Also provide text input as a fallback.
+
+The interview screen should include:
+
+* AI interviewer message
+* Play/replay question button
+* Microphone button
+* Recording indicator
+* Recording timer
+* Live/transcribed answer
+* Submit Answer
+* Retry Recording
+* Text-input fallback
+
+Handle microphone permissions gracefully.
+
+If voice services are unavailable, automatically provide text mode instead of breaking the application.
+
+---
+
+# 2. REALISTIC MOCK INTERVIEW
+
+Upgrade the existing Interview Questions feature into a complete mock interview system.
+
+Interview types:
+
+* HR
+* Technical
+* Behavioral
+* Project
+* Coding
+* Mixed
+
+Difficulty:
+
+* Beginner
+* Intermediate
+* Advanced
+
+Allow the user to choose the number of questions.
+
+The AI should ask questions one at a time and remember the conversation.
+
+Questions should adapt according to the user's previous answers.
+
+Example:
+
+**Strong answer → harder follow-up**
+
+**Weak answer → conceptual clarification**
+
+The interview should feel like a real conversation rather than a static question list.
+
+---
+
+# 3. RESUME UPLOAD & RESUME INTELLIGENCE
+
+Add a new dashboard feature:
+
+## Resume Intelligence
+
+Allow users to upload:
+
+* PDF
+* DOCX
+
+Extract and analyze:
+
+* Skills
+* Education
+* Experience
+* Projects
+* Technologies
+* Certifications
+* Achievements
+
+Display a structured resume analysis.
+
+Most importantly, use the resume to generate **personalized interview questions**.
+
+For example, if the resume says:
+
+> Developed an ESP32-based home automation system.
+
+The AI should generate questions such as:
+
+* Explain your project.
+* Why did you choose ESP32?
+* What sensors did you use?
+* How did you control the relay?
+* What communication protocol did you use?
+* What problems did you face?
+* How would you scale this system?
+* What would you change if you rebuilt it?
+
+---
+
+# 4. RESUME CLAIM CHECK
+
+Add a feature that identifies statements in the resume that an interviewer may challenge.
+
+Example:
+
+Resume says:
+
+> Improved performance by 40%.
+
+AI should generate:
+
+* How did you measure the 40%?
+* What was the original performance?
+* What optimization did you implement?
+* How did you verify the improvement?
+
+This should help candidates prepare for difficult resume-based questions.
+
+---
+
+# 5. JOB DESCRIPTION ANALYZER
+
+Add a new feature where the user can paste or upload a job description.
+
+Analyze:
+
+* Required skills
+* Preferred skills
+* Technologies
+* Responsibilities
+* Experience
+* Important topics
+
+Compare the job requirements with the user's resume.
+
+Show:
+
+### Strong Matches
+
+### Skill Gaps
+
+### Recommended Preparation
+
+Then use this information to generate a personalized interview.
+
+---
+
+# 6. INTERVIEW READINESS
+
+Create a dedicated page called:
+
+## Interview Readiness
+
+This page should prepare the user for everything beyond technical knowledge.
+
+Include:
+
+### Professional Dressing
+
+Give practical recommendations based on:
+
+* Job role
+* Industry
+* Interview format
+* Online/in-person interview
+* Professional environment
+
+Cover:
+
+* Clothing
+* Grooming
+* Shoes
+* Accessories
+* Hair
+* Overall professional appearance
+
+Avoid rigid gender stereotypes. Recommendations should be professional and context-based.
+
+---
+
+### Body Language
+
+Teach:
+
+* Eye contact
+* Sitting posture
+* Hand positioning
+* Facial expressions
+* Natural smiling
+* Listening posture
+* Appropriate gestures
+* Avoiding distracting movements
+
+Show:
+
+**Do This / Avoid This**
+
+where appropriate.
+
+---
+
+### Facial Expression & Presence
+
+Provide guidance on:
+
+* Maintaining a natural expression
+* Looking attentive
+* Avoiding nervous-looking repetitive movements
+* Showing interest
+* Appropriate smiling
+* Professional reactions while listening
+
+Do not claim to scientifically diagnose emotions or personality.
+
+---
+
+### Communication Tips
+
+Teach:
+
+* Speaking clearly
+* Appropriate speaking speed
+* Professional vocabulary
+* Avoiding filler words
+* Structuring answers
+* Listening carefully
+* Asking clarification questions
+* Being concise
+* Explaining technical concepts simply
+
+---
+
+### Answer Structure
+
+Teach frameworks such as:
+
+**STAR**
+
+Situation → Task → Action → Result
+
+and technical answer structures:
+
+**Concept → Explanation → Example → Conclusion**
+
+---
+
+# 7. ONLINE INTERVIEW PREPARATION
+
+Add a checklist:
+
+* Camera position
+* Camera height
+* Lighting
+* Background
+* Microphone
+* Internet connection
+* Headphones
+* Notifications
+* Resume ready
+* Job description reviewed
+* Professional appearance
+
+Allow users to mark each item as completed.
+
+---
+
+# 8. SELF INTRODUCTION COACH
+
+Add:
+
+## "Tell Me About Yourself" Coach
+
+User provides:
+
+* Education
+* Skills
+* Experience
+* Projects
+* Target role
+
+AI generates a personalized introduction.
+
+Also allow the user to record themselves answering it.
+
+Evaluate:
+
+* Relevance
+* Structure
+* Clarity
+* Length
+* Professionalism
+
+Provide suggestions for improvement.
+
+---
+
+# 9. PROJECT DEFENSE
+
+Add:
+
+## Project Defense
+
+The AI should deeply question projects found in the user's resume.
+
+Topics:
+
+* Architecture
+* Technology choices
+* Database
+* APIs
+* Security
+* Performance
+* Scalability
+* Testing
+* Deployment
+* Challenges
+* Future improvements
+
+The AI should ask follow-up questions when the candidate gives vague answers.
+
+---
+
+# 10. CODING INTERVIEW
+
+Add a Coding Round.
+
+Include:
+
+* Problem statement
+* Difficulty
+* Code editor
+* Python
+* C++
+* JavaScript
+* Test cases
+* Submit solution
+* Results
+* Time complexity
+* Space complexity
+* AI code review
+
+Use secure sandboxed execution.
+
+Never execute arbitrary candidate code directly inside the main server process.
+
+---
+
+# 11. AI ANSWER EVALUATION
+
+After each answer, evaluate:
+
+* Technical Knowledge
+* Accuracy
+* Relevance
+* Completeness
+* Communication
+* Answer Structure
+
+Example:
+
+```text
+Technical Knowledge     8/10
+Communication           7/10
+Relevance               9/10
+Structure               8/10
+
+Overall                 8.0/10
+```
+
+Show:
+
+### What You Did Well
+
+### What Was Missing
+
+### How To Improve
+
+### Example Better Answer
+
+Do not expose internal AI reasoning or chain-of-thought.
+
+---
+
+# 12. PERFORMANCE DASHBOARD
+
+Upgrade the existing dashboard.
+
+Show:
+
+* Interview Readiness
+* Recent Interviews
+* Average Score
+* Technical Score
+* Communication Score
+* Coding Score
+* Strong Skills
+* Weak Skills
+* Recommended Practice
+
+Add charts showing progress over multiple interviews.
+
+Example:
+
+```text
+Interview 1 → 61
+Interview 2 → 68
+Interview 3 → 74
+Interview 4 → 81
+```
+
+Clearly label these as **practice metrics**, not predictions of hiring success.
+
+---
+
+# 13. WEAKNESS DETECTION
+
+After multiple interviews, identify recurring weak areas.
+
+Example:
+
+```text
+Strong Areas:
+Python
+SQL
+OOP
+
+Needs Improvement:
+System Design
+Networking
+Behavioral Questions
+```
+
+Use actual interview performance rather than unsupported assumptions.
+
+---
+
+# 14. PERSONALIZED STUDY PLAN
+
+Based on:
+
+* Resume
+* Target role
+* Job description
+* Interview performance
+* Weaknesses
+
+Generate a personalized preparation plan.
+
+Example:
+
+```text
+DAY 1 → DBMS
+DAY 2 → SQL
+DAY 3 → Networking
+DAY 4 → System Design
+DAY 5 → Project Defense
+DAY 6 → HR
+DAY 7 → Full Mock Interview
+```
+
+Allow users to mark tasks complete.
+
+---
+
+# 15. INTERVIEW HISTORY
+
+Store completed interviews.
+
+Display:
+
+* Interview type
+* Date
+* Score
+* Topics
+* Detailed report
+
+Allow the user to reopen previous reports.
+
+---
+
+# 16. QUESTION BANK
+
+Keep the existing Interview Questions feature but improve it.
+
+Categories:
+
+* DSA
+* DBMS
+* Operating Systems
+* Computer Networks
+* OOP
+* Programming
+* Web Development
+* System Design
+* Cybersecurity
+* Cloud
+* HR
+* Behavioral
+* Projects
+
+Add:
+
+* Search
+* Filters
+* Difficulty
+* Bookmark
+* Practice button
+
+---
+
+# 17. DASHBOARD NAVIGATION
+
+Redesign the dashboard navigation into:
+
+```text
+Dashboard
+
+Prepare
+├── Interview Readiness
+├── Resume Intelligence
+├── Job Analyzer
+├── Question Bank
+└── Study Plan
+
+Practice
+├── Mock Interview
+├── Project Defense
+└── Coding Interview
+
+Analytics
+├── Performance
+├── Weaknesses
+└── Interview History
+
+Profile
+└── Settings
+```
+
+Keep the current Interview Questions functionality accessible.
+
+---
+
+# 18. UI/UX
+
+The application should look like a **premium AI SaaS product**, not a college project.
+
+Use:
+
+* Clean modern typography
+* Professional cards
+* Excellent spacing
+* Responsive design
+* Attractive dashboard
+* Clear visual hierarchy
+* Progress indicators
+* Charts
+* Subtle animations
+* Loading states
+* Empty states
+* Error states
+
+Avoid excessive gradients and unnecessary animations.
+
+The **Live Interview screen** should be the most polished screen in the application.
+
+---
+
+# 19. AI PERSONALIZATION
+
+The AI should use available user information:
+
+**Profile + Resume + Job Description + Previous Interview Performance**
+
+to personalize:
+
+* Questions
+* Difficulty
+* Follow-ups
+* Feedback
+* Study plan
+* Recommended topics
+
+The platform should progressively become more personalized as the user completes more interviews.
+
+---
+
+# 20. IMPORTANT DEVELOPMENT RULES
+
+Do NOT rebuild the application from scratch.
+
+Do NOT remove existing working functionality.
+
+First inspect the existing codebase and understand:
+
+* Current frontend
+* Current backend
+* Current database
+* Existing Interview Questions implementation
+* Existing API structure
+
+Then modify the existing architecture cleanly.
+
+Reuse existing components and APIs wherever possible.
+
+Do not create duplicate systems.
+
+Do not create fake buttons or placeholder functionality that appears to work.
+
+Use environment variables for API keys.
+
+Validate uploaded files.
+
+Handle API failures gracefully.
+
+After implementing each major module, test that the existing Interview Questions feature still works.
+
+Prioritize:
+
+**Functionality → Reliability → Security → UX → Visual polish**
+
+---
+
+# FINAL PRODUCT GOAL
+
+Transform the current InterviewAI dashboard from a simple interview-question application into a complete:
+
+## AI INTERVIEW & CAREER READINESS PLATFORM
+
+The core experience should become:
+
+**Upload Resume → Analyze Job → Prepare Professionally → Practice Voice Interview → Answer → AI Evaluates → Identify Weaknesses → Personalized Study Plan → Practice Again → Track Improvement**
+
+Make the final product polished, genuinely functional, and strong enough to demonstrate to MNC recruiters as a serious full-stack + AI project.
