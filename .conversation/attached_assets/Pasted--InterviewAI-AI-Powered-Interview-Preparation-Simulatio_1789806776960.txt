@@ -1,0 +1,1101 @@
+# InterviewAI — AI-Powered Interview Preparation & Simulation Platform
+
+## 1. Project Overview
+
+Build a production-quality full-stack web application called **InterviewAI**.
+
+InterviewAI is an AI-powered interview preparation platform designed primarily for students, fresh graduates, and software professionals.
+
+The platform should act as a personalized **AI Interview Coach**.
+
+The core workflow is:
+
+**Resume / Profile + Job Description → Personalized Interview → Candidate Answers → AI Evaluation → Detailed Feedback → Weakness Detection → Personalized Preparation → Progress Tracking**
+
+This should NOT look like a basic AI chatbot or college project.
+
+The application should feel like a modern SaaS product that could be demonstrated to recruiters and technical interviewers.
+
+---
+
+# 2. Primary Goals
+
+The application should allow a user to:
+
+1. Create an account.
+2. Build a professional candidate profile.
+3. Upload a resume.
+4. Analyze the resume using AI.
+5. Paste or upload a job description.
+6. Analyze the job description using AI.
+7. Generate a personalized interview.
+8. Select interview type and difficulty.
+9. Conduct a realistic AI interview.
+10. Answer questions through text initially and voice as an advanced feature.
+11. Receive AI-based evaluation for every answer.
+12. Receive follow-up questions based on previous answers.
+13. Complete technical, HR, behavioral, project, and coding interviews.
+14. Track performance over multiple interviews.
+15. Identify weak topics.
+16. Receive personalized preparation recommendations.
+17. Generate a final interview report.
+18. Retake interviews and compare progress.
+
+---
+
+# 3. Technology Stack
+
+Use a modern, maintainable architecture.
+
+### Frontend
+
+* React
+* TypeScript
+* Tailwind CSS
+* Modern component architecture
+* Responsive design
+* Accessible UI
+* Lucide icons or another clean icon library
+
+### Backend
+
+Use Python with:
+
+* FastAPI
+* Pydantic
+* SQLAlchemy
+
+### Database
+
+Use PostgreSQL.
+
+The database architecture should be relational and normalized.
+
+### AI
+
+Integrate an LLM through an environment-variable-based API configuration.
+
+DO NOT hardcode API keys.
+
+Use:
+
+```text
+AI_API_KEY
+AI_MODEL
+DATABASE_URL
+```
+
+or appropriate equivalent environment variables.
+
+Create a dedicated AI service layer so the LLM provider can be changed later without rewriting the application.
+
+### Authentication
+
+Implement secure authentication with:
+
+* Registration
+* Login
+* Logout
+* Password hashing
+* Secure sessions or JWT
+* Protected routes
+
+Never store plaintext passwords.
+
+---
+
+# 4. Application Structure
+
+Create the application around these major modules:
+
+```text
+InterviewAI
+│
+├── Authentication
+├── Candidate Profile
+├── Resume Analyzer
+├── Job Description Analyzer
+├── Interview Generator
+├── AI Interview Simulator
+├── Answer Evaluation
+├── Coding Interview
+├── Performance Analytics
+├── Weakness Detection
+├── Personalized Study Plan
+├── Interview History
+└── Reports
+```
+
+Keep the code modular.
+
+Do not put the entire application into a few huge files.
+
+---
+
+# 5. Landing Page
+
+Create a polished SaaS-style landing page.
+
+Hero section:
+
+## InterviewAI
+
+### Practice Smarter. Interview Better.
+
+Subheading:
+
+**An AI-powered interview coach that analyzes your resume, understands the job you're applying for, conducts realistic interviews, evaluates your answers, and helps you improve.**
+
+Primary CTA:
+
+**Start Practicing**
+
+Secondary CTA:
+
+**Try a Demo**
+
+Include sections for:
+
+* How it works
+* Features
+* Interview modes
+* AI evaluation
+* Progress tracking
+* Coding interviews
+* Personalized preparation
+* FAQ
+* Footer
+
+The landing page should look like a real technology startup website.
+
+---
+
+# 6. Authentication
+
+Create:
+
+### Sign Up
+
+Fields:
+
+* Full Name
+* Email
+* Password
+* Confirm Password
+
+### Login
+
+Fields:
+
+* Email
+* Password
+
+Add:
+
+* Form validation
+* Error handling
+* Loading states
+* Password visibility toggle
+* Secure authentication
+
+After login, redirect to the dashboard.
+
+---
+
+# 7. Candidate Profile
+
+Create a professional profile page.
+
+Fields:
+
+* Name
+* Email
+* Education
+* Degree
+* University
+* Graduation year
+* Experience
+* Skills
+* Preferred job role
+* Years of experience
+
+Allow users to edit their information.
+
+---
+
+# 8. Resume Analyzer
+
+Allow users to upload a resume.
+
+Support PDF initially.
+
+After upload:
+
+1. Extract resume text.
+2. Send relevant content to the AI service.
+3. Analyze the resume.
+4. Store structured information in the database.
+
+Extract:
+
+* Skills
+* Programming languages
+* Frameworks
+* Databases
+* Projects
+* Education
+* Experience
+* Certifications
+* Achievements
+
+Display:
+
+### Resume Analysis
+
+```text
+Skills
+Projects
+Experience
+Education
+Technologies
+Potential Interview Topics
+```
+
+AI should also identify areas that are likely to be questioned during an interview.
+
+Example:
+
+If the resume mentions:
+
+**ESP32 Home Automation Project**
+
+Generate possible interview areas such as:
+
+* ESP32 architecture
+* Sensors
+* Communication protocols
+* Embedded programming
+* Database/API integration
+* Project challenges
+
+---
+
+# 9. Job Description Analyzer
+
+Allow the user to paste a job description.
+
+Analyze:
+
+* Job title
+* Required skills
+* Preferred skills
+* Technologies
+* Experience requirements
+* Responsibilities
+* Important technical topics
+
+Display a structured summary.
+
+Example:
+
+```text
+Role:
+Software Developer
+
+Technical Skills:
+Python
+SQL
+REST APIs
+Git
+React
+
+Important Topics:
+OOP
+DBMS
+DSA
+APIs
+Web Development
+```
+
+Do not claim that the system knows a company's private or confidential interview process.
+
+---
+
+# 10. Interview Setup
+
+Create an interview configuration screen.
+
+Allow the user to select:
+
+### Interview Type
+
+* HR
+* Technical
+* Behavioral
+* Project
+* Coding
+* Mixed
+
+### Difficulty
+
+* Beginner
+* Intermediate
+* Advanced
+
+### Number of Questions
+
+* 5
+* 10
+* 15
+* 20
+
+### Answer Mode
+
+* Text
+* Voice
+
+### Interview Source
+
+* General
+* Resume-based
+* Job-description-based
+* Resume + Job Description
+
+Before starting, display a summary of the configuration.
+
+---
+
+# 11. AI Interview Engine
+
+This is the core of the application.
+
+The AI interviewer should:
+
+1. Ask one question at a time.
+2. Wait for the candidate's response.
+3. Evaluate the response.
+4. Decide whether a follow-up question is useful.
+5. Adjust difficulty when appropriate.
+6. Continue until the configured interview length is reached.
+7. Generate a final evaluation.
+
+Do not reveal internal AI reasoning or hidden chain-of-thought.
+
+The UI should only display concise explanations, scores, feedback, and recommendations.
+
+---
+
+# 12. Adaptive Interviewing
+
+Implement adaptive questioning.
+
+The interview should not simply be a fixed list of questions.
+
+For example:
+
+```text
+Strong answer
+      ↓
+Increase difficulty
+      ↓
+Deeper technical question
+```
+
+or:
+
+```text
+Weak answer
+      ↓
+Ask a conceptual follow-up
+      ↓
+Check understanding
+```
+
+The AI should consider:
+
+* Previous answer
+* Previous score
+* Candidate skill level
+* Job requirements
+* Interview difficulty
+* Previous topics
+
+---
+
+# 13. Realistic Interview UI
+
+Create a dedicated interview screen.
+
+Layout:
+
+### Left / Main Area
+
+AI interviewer
+
+```text
+Question 4 of 10
+
+"Explain the difference between TCP and UDP."
+```
+
+### Candidate Answer Area
+
+Large text input.
+
+Buttons:
+
+**Submit Answer**
+
+**Record Answer**
+
+**Skip**
+
+### Right Panel
+
+```text
+Interview Progress
+
+████████░░
+
+Question 4 / 10
+
+Topics Covered:
+✓ Networking
+✓ OSI
+→ Transport Layer
+```
+
+Do not reveal evaluation scores during the interview unless the user explicitly chooses a practice mode that provides instant feedback.
+
+---
+
+# 14. Voice Interview
+
+Implement voice functionality as an advanced feature.
+
+Flow:
+
+```text
+AI Question
+      ↓
+Text-to-Speech
+      ↓
+Candidate speaks
+      ↓
+Speech-to-Text
+      ↓
+Answer Evaluation
+```
+
+Provide:
+
+* Microphone permission handling
+* Recording indicator
+* Recording timer
+* Transcribed answer
+* Retry recording
+* Submit answer
+
+If a speech API is unavailable, gracefully fall back to text mode.
+
+---
+
+# 15. Answer Evaluation Engine
+
+Every answer should be evaluated using structured criteria.
+
+Evaluate:
+
+* Technical accuracy
+* Relevance
+* Completeness
+* Clarity
+* Communication
+* Confidence indicators where technically measurable from available input
+
+Use a 0–10 score for individual categories.
+
+Example:
+
+```text
+Technical Accuracy      8/10
+Relevance               9/10
+Completeness            7/10
+Communication           8/10
+
+Overall                 8.0/10
+```
+
+Then provide:
+
+### What You Did Well
+
+Short bullet points.
+
+### What Could Be Improved
+
+Short bullet points.
+
+### Missing Concepts
+
+Relevant concepts the candidate did not mention.
+
+### Suggested Better Answer
+
+Provide a concise model answer.
+
+Avoid giving unnecessarily long explanations.
+
+---
+
+# 16. Follow-Up Questions
+
+The AI should be able to ask contextual follow-up questions.
+
+Example:
+
+Question:
+
+> What is a REST API?
+
+Candidate:
+
+> REST API allows communication between client and server.
+
+Follow-up:
+
+> You mentioned client-server communication. Which HTTP methods would you commonly use when working with REST APIs?
+
+Follow-up questions should be relevant to the candidate's previous answer.
+
+---
+
+# 17. Project Interview Mode
+
+Create a dedicated project interview mode.
+
+The AI should ask questions about projects found in the resume.
+
+Examples:
+
+* Explain your project.
+* Why did you choose this technology?
+* What problem did the project solve?
+* What was the biggest technical challenge?
+* How did you test it?
+* What would you improve?
+* How would you scale it?
+* What alternative technologies could you have used?
+
+This mode should be highly useful for fresh graduates.
+
+---
+
+# 18. Coding Interview
+
+Create a coding interview module.
+
+Features:
+
+* Problem statement
+* Code editor
+* Language selector
+* Test cases
+* Submit solution
+* Result display
+
+Initially support:
+
+* Python
+* C++
+* JavaScript
+
+Evaluate:
+
+* Correctness
+* Test cases
+* Time complexity
+* Space complexity
+* Code quality
+
+Use a secure sandboxed execution mechanism.
+
+NEVER execute arbitrary user code directly inside the main application process.
+
+If secure code execution is not available in the first implementation, build the UI and evaluation architecture with a safe placeholder rather than introducing an unsafe execution mechanism.
+
+---
+
+# 19. Performance Dashboard
+
+Create a professional analytics dashboard.
+
+Display:
+
+### Overall Interview Readiness
+
+```text
+78 / 100
+```
+
+This should be clearly described as an internal practice metric, not a prediction of hiring success.
+
+Show:
+
+```text
+Technical Knowledge
+82%
+
+Problem Solving
+76%
+
+Communication
+71%
+
+Coding
+79%
+
+Behavioral
+84%
+```
+
+Add charts for historical performance.
+
+---
+
+# 20. Weakness Detection
+
+Analyze performance across multiple interviews.
+
+Identify recurring weak areas.
+
+Example:
+
+```text
+Areas to Improve
+
+🔴 System Design
+🟠 DBMS
+🟠 Behavioral Questions
+
+Strong Areas
+
+🟢 Python
+🟢 OOP
+🟢 SQL
+```
+
+Do not make unsupported psychological judgments.
+
+Base recommendations only on measurable interview performance.
+
+---
+
+# 21. Personalized Preparation Plan
+
+Based on weaknesses, automatically generate a preparation plan.
+
+Example:
+
+```text
+7-Day Interview Plan
+
+Day 1
+SQL Joins + Practice
+
+Day 2
+Normalization + Indexing
+
+Day 3
+Transactions
+
+Day 4
+SQL Interview Questions
+
+Day 5
+System Design Basics
+
+Day 6
+Mock Technical Interview
+
+Day 7
+Full Interview Simulation
+```
+
+Allow users to mark tasks as completed.
+
+---
+
+# 22. Interview History
+
+Store previous interviews.
+
+Display:
+
+```text
+Technical Interview
+September 19
+Score: 74
+
+Mixed Interview
+September 17
+Score: 69
+
+HR Interview
+September 15
+Score: 81
+```
+
+Allow users to open previous reports.
+
+---
+
+# 23. Progress Tracking
+
+Display improvement over time.
+
+Example:
+
+```text
+Interview 1    61
+Interview 2    67
+Interview 3    72
+Interview 4    79
+Interview 5    83
+```
+
+Add filters:
+
+* All
+* Technical
+* HR
+* Coding
+* Behavioral
+* Project
+
+---
+
+# 24. Interview Report
+
+After completing an interview, generate a detailed report.
+
+Sections:
+
+### Interview Summary
+
+### Overall Score
+
+### Category Scores
+
+### Questions Asked
+
+### Candidate Answers
+
+### Evaluation
+
+### Strong Areas
+
+### Weak Areas
+
+### Recommended Topics
+
+### Personalized Practice Plan
+
+Provide a clean downloadable report if practical.
+
+---
+
+# 25. Database Design
+
+Create appropriate PostgreSQL tables.
+
+At minimum:
+
+```text
+users
+profiles
+resumes
+resume_analysis
+job_descriptions
+interviews
+interview_questions
+answers
+answer_evaluations
+coding_questions
+coding_submissions
+performance_metrics
+study_plans
+study_tasks
+```
+
+Use proper foreign keys, indexes, timestamps, and relationships.
+
+Do not store unnecessary sensitive information.
+
+---
+
+# 26. Security Requirements
+
+Follow secure development practices.
+
+Implement:
+
+* Password hashing
+* Authentication
+* Authorization
+* Input validation
+* File type validation
+* File size limits
+* Secure environment variables
+* SQL injection prevention
+* XSS prevention
+* CSRF protection where applicable
+* Rate limiting for expensive AI endpoints
+* Proper error handling
+* No secrets in source code
+
+Never expose API keys to the frontend.
+
+---
+
+# 27. UI / UX Requirements
+
+The interface should feel like a premium modern SaaS product.
+
+Design direction:
+
+* Clean
+* Professional
+* Minimal
+* Modern
+* Responsive
+* Accessible
+
+Use:
+
+* Consistent spacing
+* Clear typography
+* Cards
+* Subtle shadows
+* Good empty states
+* Loading skeletons
+* Toast notifications
+* Smooth but restrained animations
+* Responsive layouts
+
+Avoid:
+
+* Excessive gradients
+* Excessive animations
+* Huge unnecessary text
+* Cluttered dashboards
+* Generic AI-chatbot appearance
+
+The application should look suitable for a professional portfolio.
+
+---
+
+# 28. Error Handling
+
+Every important API call must have:
+
+* Loading state
+* Success state
+* Error state
+* Retry option where appropriate
+
+Handle:
+
+* AI API failures
+* Invalid resume files
+* Network failures
+* Authentication errors
+* Database errors
+* Empty AI responses
+* Voice permission denial
+
+Never show raw stack traces to users.
+
+---
+
+# 29. AI Architecture
+
+Create a dedicated AI service layer.
+
+Example conceptual structure:
+
+```text
+AIService
+├── analyze_resume()
+├── analyze_job_description()
+├── generate_questions()
+├── generate_followup()
+├── evaluate_answer()
+├── generate_interview_report()
+├── detect_weaknesses()
+└── generate_study_plan()
+```
+
+Use structured JSON responses from the AI wherever possible.
+
+Validate AI output using schemas before storing or displaying it.
+
+Do not depend on free-form AI responses for critical application logic.
+
+---
+
+# 30. Environment Configuration
+
+Create a `.env.example` file.
+
+Example:
+
+```text
+DATABASE_URL=
+AI_API_KEY=
+AI_MODEL=
+SECRET_KEY=
+```
+
+Never commit actual credentials.
+
+---
+
+# 31. Development Strategy
+
+Do not attempt to implement every advanced feature simultaneously.
+
+Build incrementally in this order:
+
+### Phase 1
+
+* Project setup
+* Database
+* Authentication
+* Dashboard
+* Profile
+
+### Phase 2
+
+* Resume upload
+* Resume analysis
+* Job description analysis
+
+### Phase 3
+
+* Interview generation
+* Interview UI
+* Answer evaluation
+* Interview reports
+
+### Phase 4
+
+* Interview history
+* Analytics
+* Weakness detection
+* Study plans
+
+### Phase 5
+
+* Coding interviews
+* Voice interviews
+* Advanced adaptive interviewing
+
+### Phase 6
+
+* UI polish
+* Security review
+* Performance optimization
+* Testing
+* Deployment
+
+After every phase, verify that the existing application still works before continuing.
+
+---
+
+# 32. Testing
+
+Implement tests for important functionality.
+
+Test:
+
+* Authentication
+* Database operations
+* Resume processing
+* AI service responses
+* Interview generation
+* Answer evaluation
+* Authorization
+* API validation
+
+Include both backend tests and important frontend tests where practical.
+
+---
+
+# 33. README
+
+Create a professional README containing:
+
+* Project overview
+* Problem statement
+* Features
+* Architecture
+* Tech stack
+* Database design
+* AI architecture
+* Setup instructions
+* Environment variables
+* Screenshots section
+* Future improvements
+
+The README should clearly communicate the engineering decisions behind the project.
+
+---
+
+# 34. Important Development Rule
+
+Prioritize **working functionality over fake UI**.
+
+Do not create buttons that appear functional but do nothing.
+
+If a feature cannot yet be implemented because an external API is unavailable, create a clean abstraction and explain the limitation rather than pretending the feature works.
+
+Keep the code readable, modular, documented where necessary, and production-oriented.
+
+---
+
+# 35. First Task
+
+Start by creating the initial project architecture and working MVP foundation.
+
+Before implementing advanced features:
+
+1. Set up the project.
+2. Set up PostgreSQL.
+3. Create database models.
+4. Implement authentication.
+5. Create the main dashboard.
+6. Create the candidate profile.
+7. Create navigation/layout.
+8. Configure environment variables.
+9. Add basic API structure.
+10. Verify that the application runs successfully on Replit.
+
+After completing this foundation, provide a concise summary of:
+
+* Files created
+* Technologies configured
+* Database tables created
+* Routes implemented
+* Features currently working
+* Any environment variables that need to be configured
+
+Then continue to the next development phase only after verifying the current phase works.
+
+## Final Product Goal
+
+The finished product should feel like a real AI SaaS platform:
+
+**Upload Resume → Analyze Job → Start Interview → Answer Questions → Receive AI Evaluation → Discover Weaknesses → Follow Personalized Plan → Retake Interview → Track Improvement**
+
+Build this as a serious portfolio project suitable for demonstrating full-stack development, AI integration, database engineering, API design, authentication, security, analytics, and product thinking.

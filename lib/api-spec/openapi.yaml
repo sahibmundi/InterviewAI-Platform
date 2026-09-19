@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: InterviewAI application API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Practice overview and progress
+  - name: profile
+    description: Candidate profile
+  - name: interviews
+    description: Interview history and reports
 paths:
   /healthz:
     get:
@@ -24,6 +30,123 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get the candidate dashboard
+      description: Returns the current candidate's practice readiness, metrics, next recommendation, and recent interview activity.
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          description: Authentication required
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get the candidate profile
+      responses:
+        "200":
+          description: Candidate profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidateProfile"
+        "401":
+          description: Authentication required
+    patch:
+      operationId: updateProfile
+      tags: [profile]
+      summary: Update the candidate profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated candidate profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidateProfile"
+        "400":
+          description: Invalid profile data
+        "401":
+          description: Authentication required
+  /interviews:
+    get:
+      operationId: listInterviews
+      tags: [interviews]
+      summary: List previous interviews
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, technical, hr, behavioral, project, coding, mixed]
+            default: all
+      responses:
+        "200":
+          description: Interview history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InterviewSummary"
+        "401":
+          description: Authentication required
+    post:
+      operationId: createInterview
+      tags: [interviews]
+      summary: Create an interview from a configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewInput"
+      responses:
+        "201":
+          description: Interview created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Interview"
+        "400":
+          description: Invalid interview configuration
+        "401":
+          description: Authentication required
+  /interviews/{interviewId}:
+    get:
+      operationId: getInterview
+      tags: [interviews]
+      summary: Get an interview report
+      parameters:
+        - name: interviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Interview report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Interview"
+        "404":
+          description: Interview not found
+        "401":
+          description: Authentication required
 components:
   schemas:
     HealthStatus:
@@ -33,4 +156,249 @@ components:
           type: string
       required:
         - status
+    CandidateProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        education:
+          type: string
+        degree:
+          type: string
+        university:
+          type: string
+        graduationYear:
+          type: integer
+          minimum: 1950
+          maximum: 2100
+        experience:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        preferredRole:
+          type: string
+        yearsOfExperience:
+          type: number
+          minimum: 0
+        profileCompletion:
+          type: integer
+          minimum: 0
+          maximum: 100
+        resumeName:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - fullName
+        - email
+        - education
+        - degree
+        - university
+        - graduationYear
+        - experience
+        - skills
+        - preferredRole
+        - yearsOfExperience
+        - profileCompletion
+        - resumeName
+        - updatedAt
+    ProfileUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+        education:
+          type: string
+        degree:
+          type: string
+        university:
+          type: string
+        graduationYear:
+          type: integer
+          minimum: 1950
+          maximum: 2100
+        experience:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        preferredRole:
+          type: string
+        yearsOfExperience:
+          type: number
+          minimum: 0
+    ReadinessMetric:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: integer
+          minimum: 0
+          maximum: 100
+        change:
+          type: number
+        color:
+          type: string
+      required: [label, value, change, color]
+    ProgressPoint:
+      type: object
+      properties:
+        label:
+          type: string
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required: [label, score]
+    PracticeRecommendation:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        duration:
+          type: string
+        action:
+          type: string
+      required: [title, description, category, duration, action]
+    WeakArea:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        severity:
+          type: string
+          enum: [high, medium, low]
+      required: [name, score, severity]
+    InterviewSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [technical, hr, behavioral, project, coding, mixed]
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        questions:
+          type: integer
+          minimum: 1
+        completedAt:
+          type: string
+          format: date-time
+        duration:
+          type: string
+      required: [id, title, type, difficulty, score, questions, completedAt, duration]
+    Dashboard:
+      type: object
+      properties:
+        candidate:
+          $ref: "#/components/schemas/CandidateProfile"
+        readinessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        readinessLabel:
+          type: string
+        readinessDescription:
+          type: string
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadinessMetric"
+        progress:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgressPoint"
+        recommendation:
+          $ref: "#/components/schemas/PracticeRecommendation"
+        weakAreas:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeakArea"
+        recentInterviews:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterviewSummary"
+      required: [candidate, readinessScore, readinessLabel, readinessDescription, metrics, progress, recommendation, weakAreas, recentInterviews]
+    InterviewInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [hr, technical, behavioral, project, coding, mixed]
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        questionCount:
+          type: integer
+          enum: [5, 10, 15, 20]
+        answerMode:
+          type: string
+          enum: [text, voice]
+        source:
+          type: string
+          enum: [general, resume, job_description, resume_and_job_description]
+      required: [type, difficulty, questionCount, answerMode, source]
+    Interview:
+      allOf:
+        - $ref: "#/components/schemas/InterviewSummary"
+        - type: object
+          properties:
+            answerMode:
+              type: string
+              enum: [text, voice]
+            source:
+              type: string
+              enum: [general, resume, job_description, resume_and_job_description]
+            status:
+              type: string
+              enum: [ready, in_progress, completed]
+            categoryScores:
+              type: object
+              additionalProperties:
+                type: integer
+            questionsAsked:
+              type: array
+              items:
+                type: string
+            strongAreas:
+              type: array
+              items:
+                type: string
+            weakAreas:
+              type: array
+              items:
+                type: string
+            recommendedTopics:
+              type: array
+              items:
+                type: string
+          required: [answerMode, source, status, categoryScores, questionsAsked, strongAreas, weakAreas, recommendedTopics]
 

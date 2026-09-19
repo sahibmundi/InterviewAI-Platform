@@ -1,6 +1,6 @@
-# [Project name]
+# InterviewAI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+InterviewAI is an AI interview preparation studio that helps candidates practice in context, see measurable readiness signals, and improve through focused repetition.
 
 ## Run & Operate
 
@@ -22,15 +22,25 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/interview-ai` — React + Vite web app, routes, Clerk-powered auth screens, and the product theme.
+- `artifacts/api-server` — Express API with Clerk middleware and protected dashboard/profile/interview routes.
+- `lib/api-spec/openapi.yaml` — source of truth for API contracts.
+- `lib/db/src/schema` — Drizzle schema for users, profiles, and interviews.
+- `lib/api-client-react/src/generated` — generated React Query hooks and types.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Clerk owns browser authentication and session cookies; the API does not implement local password storage or bearer-token handling for the web app.
+- The browser client is generated from OpenAPI so route payloads and response shapes stay aligned with the Express API.
+- User records are provisioned just in time from the Clerk user ID, keeping application profile data relational without duplicating auth credentials.
+- Interview scores and readiness are practice metrics only; they are not predictions of hiring outcomes.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Public landing page focused on the practice loop and measurable signal.
+- Branded Clerk sign-in and sign-up routes.
+- Protected dashboard, candidate profile editor, interview history, interview configuration, and interview report surfaces.
+- PostgreSQL-backed profile and interview foundation ready for resume analysis and the AI interview engine.
 
 ## User preferences
 
@@ -38,7 +48,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Regenerate the API client after changing `lib/api-spec/openapi.yaml` with `pnpm --filter @workspace/api-spec run codegen`.
+- Browser auth uses Clerk cookies. Do not add `Authorization` headers or mobile-style token getters to the web client.
+- The API workflow owns the `/api` service path and the web workflow owns `/`; use their managed workflows rather than starting root-level dev commands.
 
 ## Pointers
 

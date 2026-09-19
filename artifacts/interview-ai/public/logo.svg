@@ -1,0 +1,6 @@
+<svg width="128" height="40" viewBox="0 0 128 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="40" height="40" rx="10" fill="#F5A623"/>
+  <path d="M14 12h4v16h-4V12Zm8 0h4v16h-4V12Zm8 0h4v16h-4V12Z" fill="#222A3F"/>
+  <text x="48" y="26" fill="#222A3F" font-family="Arial, sans-serif" font-size="17" font-weight="700">Interview</text>
+  <text x="111" y="26" fill="#F5A623" font-family="Arial, sans-serif" font-size="17" font-weight="700">AI</text>
+</svg>
