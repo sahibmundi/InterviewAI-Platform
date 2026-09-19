@@ -272,7 +272,7 @@ router.post("/interviews", async (req, res): Promise<void> => {
       status: "in_progress",
       score: 0,
       duration: `${parsed.data.questionCount} questions`,
-      completedAt: new Date(),
+       completedAt: null,
       categoryScores: "{}",
       questionsAsked: questions.map((question) => question.prompt),
       answers: "[]",
@@ -315,8 +315,12 @@ router.post("/interviews/:interviewId/answers", async (req, res): Promise<void> 
   }
   const params = SubmitInterviewAnswerParams.safeParse(req.params);
   const body = SubmitInterviewAnswerBody.safeParse(req.body);
-  if (!params.success || !body.success) {
-    res.status(400).json({ error: !params.success ? params.error.message : body.error.message });
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
     return;
   }
   const user = await getOrCreateCurrentUser(clerkUserId);

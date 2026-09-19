@@ -75,15 +75,65 @@ router.get("/dashboard", async (req, res): Promise<void> => {
     difficulty: interview.difficulty,
     score: interview.score,
     questions: interview.questionCount,
+    status: interview.status,
     completedAt: interview.completedAt ?? interview.createdAt,
     duration: interview.duration,
   }));
 
+  const completedInterviews = interviews.filter(
+    (interview) => interview.status === "completed",
+  );
+  const categoryTotals = new Map<string, number[]>();
+  completedInterviews.forEach((interview) => {
+    try {
+      const categoryScores = JSON.parse(interview.categoryScores) as Record<
+        string,
+        number
+      >;
+      Object.entries(categoryScores).forEach(([category, score]) => {
+        const values = categoryTotals.get(category) ?? [];
+        values.push(score);
+        categoryTotals.set(category, values);
+      });
+    } catch {
+      // Older records may not have a category score payload.
+    }
+  });
+  const categoryAverage = (categories: string[]) => {
+    const values = categories.flatMap(
+      (category) => categoryTotals.get(category) ?? [],
+    );
+    return values.length
+      ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
+      : readinessScore;
+  };
+  const previousScore = completedInterviews[1]?.score ?? readinessScore;
+  const scoreChange = readinessScore - previousScore;
   const metrics = [
-    { label: "Technical knowledge", value: readinessScore, change: 0, color: "blue" },
-    { label: "Problem solving", value: readinessScore, change: 0, color: "violet" },
-    { label: "Communication", value: readinessScore, change: 0, color: "amber" },
-    { label: "Behavioral", value: readinessScore, change: 0, color: "emerald" },
+    {
+      label: "Technical knowledge",
+      value: categoryAverage(["technical depth", "system design", "algorithms", "data structures", "complexity", "quality"]),
+      change: scoreChange,
+      color: "blue",
+    },
+    {
+      label: "Problem solving",
+      value: categoryAverage(["problem solving", "judgment", "prioritization"]),
+      change: scoreChange,
+      color: "violet",
+    },
+    {
+      label: "Communication",
+      value: categoryAverage(["communication", "collaboration", "culture"]),
+      change: scoreChange,
+      color: "amber",
+    },
+    {
+      label: "Behavioral",
+      value: categoryAverage(["self awareness", "ownership", "impact", "growth", "motivation", "adaptability"]),
+      change: scoreChange,
+      color: "emerald",
+    },
   ];
 
   const progress = scores
@@ -91,6 +141,16 @@ router.get("/dashboard", async (req, res): Promise<void> => {
     .reverse()
     .map((score, index) => ({ label: `Interview ${index + 1}`, score }));
 
+  const weakAreas = metrics
+    .filter((metric) => metric.value > 0 && metric.value < 70)
+    .sort((left, right) => left.value - right.value)
+    .slice(0, 3)
+    .map((metric) => ({
+      name: metric.label,
+      score: metric.value,
+      severity: metric.value < 55 ? "high" : metric.value < 65 ? "medium" : "low",
+    }));
+  const focusArea = weakAreas[0]?.name;
   const data = {
     candidate,
     readinessScore,
@@ -103,19 +163,22 @@ router.get("/dashboard", async (req, res): Promise<void> => {
     metrics,
     progress,
     recommendation: {
-      title:
-        readinessScore > 0
+      title: focusArea
+        ? `Sharpen your ${focusArea.toLowerCase()}`
+        : readinessScore > 0
           ? "Keep your momentum going"
           : "Set up your first interview",
       description:
-        readinessScore > 0
-          ? "Use a focused technical session to reinforce the topics you have been practicing."
-          : "Choose a format, difficulty, and question count that matches your next opportunity.",
-      category: "Next practice",
+        focusArea
+          ? `Run a focused session that gives you more practice with ${focusArea.toLowerCase()}.`
+          : readinessScore > 0
+            ? "Use a focused technical session to reinforce the topics you have been practicing."
+            : "Choose a format, difficulty, and question count that matches your next opportunity.",
+      category: focusArea ?? "Next practice",
       duration: "15 min",
       action: "Start interview",
     },
-    weakAreas: [],
+    weakAreas,
     recentInterviews,
   };
 
