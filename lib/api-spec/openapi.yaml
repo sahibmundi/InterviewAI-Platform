@@ -346,7 +346,7 @@ components:
         resumeText:
           type: string
           minLength: 40
-          maxLength: 30000
+          maxLength: 60000
         jobDescription:
           type: string
           maxLength: 16000

@@ -5,8 +5,10 @@ import {
   Check,
   FileSearch,
   Link as LinkIcon,
+  LoaderCircle,
   Sparkles,
   Target,
+  Upload,
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -15,6 +17,10 @@ import {
   useGetProfile,
 } from "@workspace/api-client-react";
 import { VoiceInputButton } from "@/components/voice-input";
+import {
+  extractResumeText,
+  RESUME_FILE_ACCEPT,
+} from "@/lib/resume-file-parser";
 
 const cn = (...parts: Array<string | false | undefined>) =>
   parts.filter(Boolean).join(" ");
@@ -67,6 +73,9 @@ export function AICoachPage() {
   const [context, setContext] = useState("");
   const [voiceError, setVoiceError] = useState("");
   const [resumeVoiceError, setResumeVoiceError] = useState("");
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [resumeFileError, setResumeFileError] = useState("");
+  const [isParsingResume, setIsParsingResume] = useState(false);
 
   const submitResume = (event: FormEvent) => {
     event.preventDefault();
@@ -83,6 +92,36 @@ export function AICoachPage() {
         ? `${profile.data.preferredRole}; ${profile.data.skills.join(", ")}; ${profile.data.experience}`
         : undefined);
     ask.mutate({ data: { question: question.trim(), context: profileContext || undefined } });
+  };
+
+  const handleResumeFile = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setResumeFileName(file.name);
+    setResumeFileError("");
+    setIsParsingResume(true);
+    try {
+      const extractedText = await extractResumeText(file);
+      if (extractedText.length < 40) {
+        throw new Error(
+          "We could not find enough selectable text in that file. Try a text-based PDF or DOCX, or paste the content below.",
+        );
+      }
+      setResumeText(extractedText);
+    } catch (error) {
+      setResumeFileName("");
+      setResumeFileError(
+        error instanceof Error
+          ? error.message
+          : "We could not read that resume file.",
+      );
+    } finally {
+      setIsParsingResume(false);
+    }
   };
 
   return (
@@ -107,16 +146,55 @@ export function AICoachPage() {
             <div>
               <p className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-muted-foreground">Resume lab</p>
               <h2 className="mt-1 font-display text-2xl font-semibold">Get a sharper read on your resume.</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">Paste the text from your resume. Add a job description to surface relevant gaps and keywords.</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Upload your resume or paste the text. Add a job description to surface relevant gaps and keywords.</p>
             </div>
+          </div>
+          <div className="mt-6 rounded-xl border border-dashed border-secondary/50 bg-secondary/5 p-4">
+            <label className="flex cursor-pointer items-center gap-4 rounded-lg p-2 transition hover:bg-secondary/10">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary text-secondary-foreground">
+                {isParsingResume ? <LoaderCircle className="size-5 animate-spin" /> : <Upload className="size-5" />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">
+                  {isParsingResume ? "Reading your resume…" : "Upload a resume file"}
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  PDF, DOCX, or TXT · up to 10 MB · text is extracted in your browser
+                </span>
+              </span>
+              <span className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">
+                Choose file
+              </span>
+              <input
+                type="file"
+                accept={RESUME_FILE_ACCEPT}
+                onChange={handleResumeFile}
+                disabled={isParsingResume}
+                className="sr-only"
+                data-testid="input-resume-file"
+              />
+            </label>
+            {resumeFileName && !resumeFileError && (
+              <p className="mt-2 truncate px-2 text-xs font-semibold text-[hsl(169_35%_35%)]">
+                {resumeFileName} loaded and ready to review
+              </p>
+            )}
+            {resumeFileError && (
+              <p className="mt-2 px-2 text-xs leading-5 text-destructive" data-testid="status-resume-file-error">
+                {resumeFileError}
+              </p>
+            )}
           </div>
           <label className="mt-6 block">
             <div className="mb-2 flex items-center justify-between gap-3">
               <span className="text-sm font-semibold">Resume text</span>
               <VoiceInputButton value={resumeText} onChange={setResumeText} label="Dictate" onError={setResumeVoiceError} />
             </div>
-            <textarea value={resumeText} onChange={(event) => setResumeText(event.target.value)} rows={12} className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Paste your experience, projects, skills, and education here…" />
+            <textarea value={resumeText} onChange={(event) => setResumeText(event.target.value)} rows={12} className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Your extracted resume text will appear here. You can review or edit it before analysis." />
             {resumeVoiceError && <span className="mt-2 block text-xs text-destructive">{resumeVoiceError}</span>}
+            <span className="mt-2 block text-right font-mono-ui text-[10px] uppercase tracking-wider text-muted-foreground">
+              {resumeText.length.toLocaleString()} characters extracted
+            </span>
           </label>
           <label className="mt-5 block">
             <span className="mb-2 block text-sm font-semibold">Target job description <span className="font-normal text-muted-foreground">(optional)</span></span>
@@ -124,7 +202,7 @@ export function AICoachPage() {
           </label>
           <div className="mt-5 flex items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">Gemini reviews content you submit; it does not predict hiring outcomes.</p>
-            <button type="submit" disabled={analyze.isPending || resumeText.trim().length < 40} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-secondary px-4 text-sm font-bold text-secondary-foreground shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" data-testid="button-analyze-resume">
+             <button type="submit" disabled={analyze.isPending || isParsingResume || resumeText.trim().length < 40} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-secondary px-4 text-sm font-bold text-secondary-foreground shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" data-testid="button-analyze-resume">
               {analyze.isPending ? "Reviewing…" : "Analyze resume"} <ArrowRight className="size-4" />
             </button>
           </div>
