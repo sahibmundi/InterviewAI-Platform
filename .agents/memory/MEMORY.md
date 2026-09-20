@@ -1,1 +1,2 @@
 - [Imported workspace setup](imported-workspace-setup.md) — install the pnpm workspace dependencies and configure Clerk secrets before restarting artifact workflows.
+- [Gemini model availability](gemini-model-availability.md) — Gemini model names can be unavailable to new projects; keep the model configurable and verify the provider response before diagnosing networking.

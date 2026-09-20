@@ -19,6 +19,15 @@ import { VoiceInputButton } from "@/components/voice-input";
 const cn = (...parts: Array<string | false | undefined>) =>
   parts.filter(Boolean).join(" ");
 
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (!error || typeof error !== "object") return fallback;
+  const data = (error as { data?: unknown }).data;
+  if (data && typeof data === "object" && typeof (data as { error?: unknown }).error === "string") {
+    return (data as { error: string }).error;
+  }
+  return fallback;
+}
+
 const resourceLinks = [
   {
     source: "OWASP",
@@ -119,7 +128,7 @@ export function AICoachPage() {
               {analyze.isPending ? "Reviewing…" : "Analyze resume"} <ArrowRight className="size-4" />
             </button>
           </div>
-          {analyze.isError && <p className="mt-4 text-sm text-destructive" data-testid="status-resume-error">The resume analysis could not be completed. Check your connection and try again.</p>}
+          {analyze.isError && <p className="mt-4 text-sm text-destructive" data-testid="status-resume-error">{getApiErrorMessage(analyze.error, "The resume analysis could not be completed. Try again.")}</p>}
         </form>
 
         <div className="rounded-2xl bg-primary p-6 text-primary-foreground shadow-md sm:p-8">
@@ -158,7 +167,7 @@ export function AICoachPage() {
           <div><div className="flex items-center justify-between gap-3"><label htmlFor="coach-question" className="text-sm font-semibold">Your question</label><VoiceInputButton value={question} onChange={setQuestion} label="Ask by voice" onError={setVoiceError} /></div><textarea id="coach-question" value={question} onChange={(event) => setQuestion(event.target.value)} rows={6} className="mt-2 w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="How should I explain a system design trade-off? What follow-ups might an interviewer ask about my project?" />{voiceError && <p className="mt-2 text-xs text-destructive">{voiceError}</p>}</div>
           <div><label htmlFor="coach-context" className="text-sm font-semibold">Extra context <span className="font-normal text-muted-foreground">(optional)</span></label><textarea id="coach-context" value={context} onChange={(event) => setContext(event.target.value)} rows={6} className="mt-2 w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Paste a project, role, or your rough answer…" /><button type="submit" disabled={ask.isPending || question.trim().length < 3} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" data-testid="button-ask-coach">{ask.isPending ? "Thinking…" : "Ask the coach"} <ArrowRight className="size-4" /></button></div>
         </form>
-        {ask.isError && <p className="mt-4 text-sm text-destructive">The coach could not answer right now. Try again in a moment.</p>}
+        {ask.isError && <p className="mt-4 text-sm text-destructive">{getApiErrorMessage(ask.error, "The coach could not answer right now. Try again in a moment.")}</p>}
         {ask.data && <div className="mt-7 grid gap-5 lg:grid-cols-[1.2fr_.8fr]" data-testid="section-coach-answer"><div className="rounded-xl bg-muted p-5"><p className="font-mono-ui text-xs font-semibold uppercase tracking-wider text-secondary">Coach answer</p><p className="mt-4 whitespace-pre-wrap text-sm leading-7">{ask.data.answer}</p></div><div className="space-y-4"><div className="rounded-xl border border-border p-5"><p className="font-mono-ui text-xs font-semibold uppercase tracking-wider text-secondary">Framework</p><p className="mt-3 text-sm leading-6">{ask.data.framework}</p></div><div className="rounded-xl border border-border p-5"><p className="font-mono-ui text-xs font-semibold uppercase tracking-wider text-secondary">Likely follow-ups</p><ul className="mt-3 space-y-2 text-sm leading-6">{ask.data.followUps.map((item) => <li key={item} className="flex gap-2"><ArrowRight className="mt-1 size-4 shrink-0 text-secondary" />{item}</li>)}</ul></div></div></div>}
       </section>
 
