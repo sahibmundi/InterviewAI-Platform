@@ -21,7 +21,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { VoiceInputButton } from '@/components/voice-input';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { InterviewReadinessPage, QuestionBankPage, STUDY_PLAN, StudyPlanPage } from '@/pages/preparation';
+import { InterviewReadinessPage, QuestionBankPage, StudyPlanPage } from '@/pages/preparation';
 import { AICoachPage } from '@/pages/ai-coach';
 
 const queryClient = new QueryClient();
