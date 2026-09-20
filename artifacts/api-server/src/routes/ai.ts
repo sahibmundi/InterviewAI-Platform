@@ -80,7 +80,13 @@ ${parsed.data.resumeText}${jobContext}`;
     res.json(AnalyzeResumeResponse.parse(normalized));
   } catch (error) {
     if (error instanceof GeminiUnavailableError) {
-      res.status(503).json({ error: "Gemini is unavailable right now. Check the server integration and try again." });
+      const responseStatus =
+        error.status && error.status >= 400 && error.status < 500
+          ? error.status === 429
+            ? 429
+            : 502
+          : 503;
+      res.status(responseStatus).json({ error: error.message });
       return;
     }
     res.status(502).json({ error: "Gemini returned an unreadable analysis. Try again." });
@@ -128,7 +134,13 @@ ${parsed.data.context ? `\nCANDIDATE CONTEXT:\n${parsed.data.context}` : ""}`;
     res.json(AskCoachResponse.parse(normalized));
   } catch (error) {
     if (error instanceof GeminiUnavailableError) {
-      res.status(503).json({ error: "Gemini is unavailable right now. Check the server integration and try again." });
+      const responseStatus =
+        error.status && error.status >= 400 && error.status < 500
+          ? error.status === 429
+            ? 429
+            : 502
+          : 503;
+      res.status(responseStatus).json({ error: error.message });
       return;
     }
     res.status(502).json({ error: "Gemini returned an unreadable answer. Try again." });

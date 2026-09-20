@@ -1,7 +1,10 @@
+import { logger } from "./logger";
+
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
 
 type GeminiResponse = {
   candidates?: Array<{
+    finishReason?: string;
     content?: {
       parts?: Array<{ text?: string }>;
     };
@@ -9,7 +12,7 @@ type GeminiResponse = {
 };
 
 export class GeminiUnavailableError extends Error {
-  constructor(message: string) {
+  constructor(message: string, readonly status?: number) {
     super(message);
     this.name = "GeminiUnavailableError";
   }
@@ -39,8 +42,17 @@ export async function generateGeminiText(prompt: string): Promise<string> {
 
   if (!response.ok) {
     const detail = await response.text();
+    logger.warn(
+      {
+        model: GEMINI_MODEL,
+        status: response.status,
+        detail: detail.slice(0, 300),
+      },
+      "Gemini provider request failed",
+    );
     throw new GeminiUnavailableError(
       `Gemini request failed with status ${response.status}: ${detail.slice(0, 300)}`,
+      response.status,
     );
   }
 
@@ -52,6 +64,10 @@ export async function generateGeminiText(prompt: string): Promise<string> {
       .trim() ?? "";
 
   if (!text) {
+    logger.warn(
+      { model: GEMINI_MODEL, finishReason: payload.candidates?.[0]?.finishReason },
+      "Gemini provider returned no text",
+    );
     throw new GeminiUnavailableError("Gemini returned an empty response.");
   }
 
