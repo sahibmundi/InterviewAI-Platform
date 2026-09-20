@@ -186,6 +186,60 @@ export const UpdateProfileResponse = zod.object({
 
 
 /**
+ * @summary Analyze a resume with Gemini
+ */
+export const analyzeResumeBodyResumeTextMin = 40;
+export const analyzeResumeBodyResumeTextMax = 30000;
+
+export const analyzeResumeBodyJobDescriptionMax = 16000;
+
+
+
+export const AnalyzeResumeBody = zod.object({
+  "resumeText": zod.string().min(analyzeResumeBodyResumeTextMin).max(analyzeResumeBodyResumeTextMax),
+  "jobDescription": zod.string().max(analyzeResumeBodyJobDescriptionMax).optional()
+})
+
+export const analyzeResumeResponseOverallScoreMin = 0;
+export const analyzeResumeResponseOverallScoreMax = 100;
+
+
+
+export const AnalyzeResumeResponse = zod.object({
+  "overallScore": zod.number().int().min(analyzeResumeResponseOverallScoreMin).max(analyzeResumeResponseOverallScoreMax),
+  "summary": zod.string(),
+  "strengths": zod.array(zod.string()),
+  "gaps": zod.array(zod.string()),
+  "keywords": zod.array(zod.string()),
+  "rewrittenBullets": zod.array(zod.string()),
+  "nextSteps": zod.array(zod.string())
+})
+
+
+/**
+ * @summary Ask the AI interview coach a question
+ */
+export const askCoachBodyQuestionMin = 3;
+export const askCoachBodyQuestionMax = 6000;
+
+export const askCoachBodyContextMax = 20000;
+
+
+
+export const AskCoachBody = zod.object({
+  "question": zod.string().min(askCoachBodyQuestionMin).max(askCoachBodyQuestionMax),
+  "context": zod.string().max(askCoachBodyContextMax).optional()
+})
+
+export const AskCoachResponse = zod.object({
+  "answer": zod.string(),
+  "framework": zod.string(),
+  "followUps": zod.array(zod.string()),
+  "sources": zod.array(zod.string())
+})
+
+
+/**
  * @summary List previous interviews
  */
 export const listInterviewsQueryTypeDefault = `all`;

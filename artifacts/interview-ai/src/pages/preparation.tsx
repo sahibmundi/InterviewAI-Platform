@@ -4,6 +4,7 @@ import {
   BookmarkCheck,
   Check,
   CheckCircle2,
+  ExternalLink,
   Laptop,
   Search,
   Shirt,
@@ -28,6 +29,29 @@ function PrepFrame({ eyebrow, title, description, children }: PrepFrameProps) {
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
       {children}
+      <section className="mt-8">
+        <div className="mb-4">
+          <p className="font-mono-ui text-[10px] uppercase tracking-[.22em] text-muted-foreground">Primary-source reading</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold">Build answers from material that holds up.</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">These public references add depth to your practice. Read the source, then explain one idea aloud in your own words.</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          {[
+            ['MDN', 'HTTP overview', 'Request lifecycles, caching, and the browser fundamentals behind web answers.', 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview'],
+            ['Google SRE', 'Service reliability', 'A practical foundation for discussing availability, incidents, and operational trade-offs.', 'https://sre.google/sre-book/table-of-contents/'],
+            ['OWASP', 'API Security Top 10', 'Use broken authorization, unsafe consumption, and resource limits as a security checklist.', 'https://owasp.org/API-Security/editions/2023/en/0x10-api-security-risks'],
+            ['PostgreSQL', 'Indexes', 'Explain why indexes speed reads while adding write and storage overhead.', 'https://www.postgresql.org/docs/current/indexes.html'],
+            ['AWS', 'Well-Architected', 'A repeatable lens for system-design answers: reliability, security, cost, and performance.', 'https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html'],
+            ['MIT OpenCourseWare', 'Algorithms', 'Review algorithmic thinking, complexity, and the reasoning interviewers want to hear.', 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/'],
+          ].map(([source, title, copy, href]) => (
+            <a key={href} href={href} target="_blank" rel="noreferrer" className="group rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-secondary/60 hover:shadow-md">
+              <div className="flex items-center justify-between"><span className="font-mono-ui text-[10px] uppercase tracking-wider text-secondary">{source}</span><ExternalLink className="size-4 text-muted-foreground transition group-hover:text-secondary" /></div>
+              <h3 className="mt-5 font-display text-lg font-semibold">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>
+            </a>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

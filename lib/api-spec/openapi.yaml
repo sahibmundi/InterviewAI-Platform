@@ -14,6 +14,8 @@ tags:
     description: Practice overview and progress
   - name: profile
     description: Candidate profile
+  - name: ai
+    description: AI-powered resume analysis and interview coaching
   - name: interviews
     description: Interview history and reports
 paths:
@@ -80,6 +82,54 @@ paths:
           description: Invalid profile data
         "401":
           description: Authentication required
+  /ai/resume-analysis:
+    post:
+      operationId: analyzeResume
+      tags: [ai]
+      summary: Analyze a resume with Gemini
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeAnalysisInput"
+      responses:
+        "200":
+          description: Resume analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeAnalysis"
+        "400":
+          description: Invalid resume input
+        "401":
+          description: Authentication required
+        "503":
+          description: AI provider unavailable
+  /ai/coach:
+    post:
+      operationId: askCoach
+      tags: [ai]
+      summary: Ask the AI interview coach a question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoachInput"
+      responses:
+        "200":
+          description: Coach answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoachResponse"
+        "400":
+          description: Invalid coach input
+        "401":
+          description: Authentication required
+        "503":
+          description: AI provider unavailable
   /interviews:
     get:
       operationId: listInterviews
@@ -290,6 +340,74 @@ components:
         yearsOfExperience:
           type: number
           minimum: 0
+    ResumeAnalysisInput:
+      type: object
+      properties:
+        resumeText:
+          type: string
+          minLength: 40
+          maxLength: 30000
+        jobDescription:
+          type: string
+          maxLength: 16000
+      required: [resumeText]
+    ResumeAnalysis:
+      type: object
+      properties:
+        overallScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        summary:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        gaps:
+          type: array
+          items:
+            type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        rewrittenBullets:
+          type: array
+          items:
+            type: string
+        nextSteps:
+          type: array
+          items:
+            type: string
+      required: [overallScore, summary, strengths, gaps, keywords, rewrittenBullets, nextSteps]
+    CoachInput:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 3
+          maxLength: 6000
+        context:
+          type: string
+          maxLength: 20000
+      required: [question]
+    CoachResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+        framework:
+          type: string
+        followUps:
+          type: array
+          items:
+            type: string
+        sources:
+          type: array
+          items:
+            type: string
+      required: [answer, framework, followUps, sources]
     ReadinessMetric:
       type: object
       properties:

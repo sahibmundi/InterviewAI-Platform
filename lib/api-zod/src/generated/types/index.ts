@@ -7,6 +7,8 @@
  */
 
 export * from './candidateProfile';
+export * from './coachInput';
+export * from './coachResponse';
 export * from './dashboard';
 export * from './healthStatus';
 export * from './interview';
@@ -34,5 +36,7 @@ export * from './practiceRecommendation';
 export * from './profileUpdate';
 export * from './progressPoint';
 export * from './readinessMetric';
+export * from './resumeAnalysis';
+export * from './resumeAnalysisInput';
 export * from './weakArea';
 export * from './weakAreaSeverity';

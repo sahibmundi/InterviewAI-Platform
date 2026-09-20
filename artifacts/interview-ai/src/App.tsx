@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowLeft, ArrowRight, BarChart3, BookOpen, BriefcaseBusiness, Check,
+  ArrowLeft, ArrowRight, BarChart3, BookOpen, BrainCircuit, BriefcaseBusiness, Check,
   ChevronDown, CircleAlert, Clock3, FileText, GraduationCap, Headphones,
-  LayoutDashboard, LockKeyhole, Menu, Mic, MicOff, Play, Plus, RotateCcw, Save,
+  LayoutDashboard, LockKeyhole, Menu, Play, Plus, RotateCcw, Save,
   Settings, Sparkles, Target, UserRound, UsersRound, X,
 } from 'lucide-react';
 import {
@@ -18,9 +18,11 @@ import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { Route, Switch, Link, Redirect, useLocation, useParams, Router as WouterRouter } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { VoiceInputButton } from '@/components/voice-input';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InterviewReadinessPage, QuestionBankPage, StudyPlanPage } from '@/pages/preparation';
+import { AICoachPage } from '@/pages/ai-coach';
 
 const queryClient = new QueryClient();
 const clerkPubKey = publishableKeyFromHost(
@@ -92,6 +94,7 @@ function AppShell({ children }: { children: ReactNode }) {
     { href: '/readiness', label: 'Interview Readiness', icon: BriefcaseBusiness },
     { href: '/question-bank', label: 'Question Bank', icon: BookOpen },
     { href: '/study-plan', label: 'Study Plan', icon: GraduationCap },
+    { href: '/ai-coach', label: 'AI Coach', icon: BrainCircuit },
     { href: '/profile', label: 'Profile', icon: UserRound },
   ];
   return <div className="noise min-h-[100dvh] bg-background">
@@ -229,13 +232,14 @@ function ProfilePage() {
   const client = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
   const [skills, setSkills] = useState('');
+  const [voiceError, setVoiceError] = useState('');
   const profile = profileQuery.data;
   const current = profile ? { ...profile, ...form } : undefined;
   if (profileQuery.isLoading) return <AppShell><PageFrame eyebrow="Candidate profile" title="Your profile"><LoadingBlock label="Loading your profile" /></PageFrame></AppShell>;
   if (profileQuery.isError || !profile || !current) return <AppShell><PageFrame eyebrow="Candidate profile" title="Your profile"><ErrorBlock onRetry={() => profileQuery.refetch()} /></PageFrame></AppShell>;
   const setField = (field: string, value: string) => setForm((previous) => ({ ...previous, [field]: value }));
   const save = (event: FormEvent) => { event.preventDefault(); update.mutate({ data: { fullName: current.fullName, education: current.education, degree: current.degree, university: current.university, graduationYear: Number(current.graduationYear), experience: current.experience, preferredRole: current.preferredRole, yearsOfExperience: Number(current.yearsOfExperience), skills: (skills || profile.skills.join(', ')).split(',').map((item) => item.trim()).filter(Boolean) } }, { onSuccess: (updated) => { client.setQueryData(getGetProfileQueryKey(), updated); setForm({}); setSkills(updated.skills.join(', ')); } }); };
-  return <AppShell><PageFrame eyebrow="Candidate profile" title="Make your context count." description="Your profile helps InterviewAI tune questions to the role you are actually pursuing." action={<div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="size-2 rounded-full bg-[hsl(169_35%_42%)]" />{update.isSuccess ? 'Saved just now' : `Updated ${formatDate(profile.updatedAt)}`}</div>}><form onSubmit={save} className="grid gap-5 xl:grid-cols-[1fr_340px]"><div className="space-y-5"><section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"><div className="flex items-center gap-4 border-b border-border pb-6"><div className="grid size-14 place-items-center rounded-2xl bg-primary font-display text-lg font-bold text-primary-foreground">{initials(current.fullName)}</div><div><p className="font-display text-xl font-semibold">{current.fullName}</p><p className="text-sm text-muted-foreground">{current.email}</p></div></div><div className="mt-7 grid gap-5 sm:grid-cols-2"><Field label="Full name" value={current.fullName} onChange={(value) => setField('fullName', value)} testId="input-profile-name" /><Field label="Preferred role" value={current.preferredRole} onChange={(value) => setField('preferredRole', value)} testId="input-profile-role" /><Field label="University" value={current.university} onChange={(value) => setField('university', value)} testId="input-profile-university" /><Field label="Degree" value={current.degree} onChange={(value) => setField('degree', value)} testId="input-profile-degree" /><Field label="Education focus" value={current.education} onChange={(value) => setField('education', value)} testId="input-profile-education" /><Field label="Graduation year" type="number" value={String(current.graduationYear)} onChange={(value) => setField('graduationYear', value)} testId="input-profile-year" /><Field label="Years of experience" type="number" value={String(current.yearsOfExperience)} onChange={(value) => setField('yearsOfExperience', value)} testId="input-profile-experience" /><Field label="Skills (comma separated)" value={skills || profile.skills.join(', ')} onChange={setSkills} testId="input-profile-skills" /></div><label className="mt-5 block"><span className="mb-2 block text-sm font-semibold">Experience snapshot</span><textarea value={current.experience} onChange={(event) => setField('experience', event.target.value)} rows={5} className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="What have you built, learned, or led?" data-testid="input-profile-summary" /></label></section><div className="flex items-center justify-end gap-3"><Link href="/dashboard" className="inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold text-muted-foreground hover:bg-muted" data-testid="link-profile-cancel">Cancel</Link><Button type="submit" variant="secondary" disabled={update.isPending} data-testid="button-profile-save"><Save className="size-4" />{update.isPending ? 'Saving…' : 'Save profile'}</Button></div>{update.isError && <p className="text-right text-sm text-destructive" data-testid="status-profile-error">Could not save your profile. Try again.</p>}</div><aside className="h-fit rounded-2xl border border-border bg-primary p-6 text-primary-foreground shadow-md sm:p-7"><p className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-primary-foreground/55">Profile signal</p><div className="mt-5 flex items-center gap-5"><ScoreRing score={profile.profileCompletion} size="small" /><div><p className="font-display text-3xl font-bold">{profile.profileCompletion}%</p><p className="mt-1 text-xs text-primary-foreground/55">complete</p></div></div><p className="mt-7 text-sm leading-6 text-primary-foreground/65">A sharper profile gives your practice more useful context. Add the details an interviewer would ask about.</p><div className="mt-7 space-y-3 border-t border-primary-foreground/10 pt-5">{[['Role', current.preferredRole], ['School', current.university], ['Skills', `${profile.skills.length} listed`]].map(([label, value]) => <div className="flex items-center justify-between text-xs" key={label}><span className="text-primary-foreground/50">{label}</span><span className="font-semibold">{value || 'Add detail'}</span></div>)}</div></aside></form></PageFrame></AppShell>;
+  return <AppShell><PageFrame eyebrow="Candidate profile" title="Make your context count." description="Your profile helps InterviewAI tune questions to the role you are actually pursuing." action={<div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="size-2 rounded-full bg-[hsl(169_35%_42%)]" />{update.isSuccess ? 'Saved just now' : `Updated ${formatDate(profile.updatedAt)}`}</div>}><form onSubmit={save} className="grid gap-5 xl:grid-cols-[1fr_340px]"><div className="space-y-5"><section className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"><div className="flex items-center gap-4 border-b border-border pb-6"><div className="grid size-14 place-items-center rounded-2xl bg-primary font-display text-lg font-bold text-primary-foreground">{initials(current.fullName)}</div><div><p className="font-display text-xl font-semibold">{current.fullName}</p><p className="text-sm text-muted-foreground">{current.email}</p></div></div><div className="mt-7 grid gap-5 sm:grid-cols-2"><Field label="Full name" value={current.fullName} onChange={(value) => setField('fullName', value)} testId="input-profile-name" /><Field label="Preferred role" value={current.preferredRole} onChange={(value) => setField('preferredRole', value)} testId="input-profile-role" /><Field label="University" value={current.university} onChange={(value) => setField('university', value)} testId="input-profile-university" /><Field label="Degree" value={current.degree} onChange={(value) => setField('degree', value)} testId="input-profile-degree" /><Field label="Education focus" value={current.education} onChange={(value) => setField('education', value)} testId="input-profile-education" /><Field label="Graduation year" type="number" value={String(current.graduationYear)} onChange={(value) => setField('graduationYear', value)} testId="input-profile-year" /><Field label="Years of experience" type="number" value={String(current.yearsOfExperience)} onChange={(value) => setField('yearsOfExperience', value)} testId="input-profile-experience" /><Field label="Skills (comma separated)" value={skills || profile.skills.join(', ')} onChange={setSkills} testId="input-profile-skills" /></div><label className="mt-5 block"><div className="mb-2 flex items-center justify-between gap-3"><span className="text-sm font-semibold">Experience snapshot</span><VoiceInputButton value={current.experience} onChange={(value) => setField('experience', value)} label="Dictate" onError={setVoiceError} /></div><textarea value={current.experience} onChange={(event) => setField('experience', event.target.value)} rows={5} className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="What have you built, learned, or led?" data-testid="input-profile-summary" />{voiceError && <span className="mt-2 block text-xs text-destructive">{voiceError}</span>}</label></section><div className="flex items-center justify-end gap-3"><Link href="/dashboard" className="inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold text-muted-foreground hover:bg-muted" data-testid="link-profile-cancel">Cancel</Link><Button type="submit" variant="secondary" disabled={update.isPending} data-testid="button-profile-save"><Save className="size-4" />{update.isPending ? 'Saving…' : 'Save profile'}</Button></div>{update.isError && <p className="text-right text-sm text-destructive" data-testid="status-profile-error">Could not save your profile. Try again.</p>}</div><aside className="h-fit rounded-2xl border border-border bg-primary p-6 text-primary-foreground shadow-md sm:p-7"><p className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-primary-foreground/55">Profile signal</p><div className="mt-5 flex items-center gap-5"><ScoreRing score={profile.profileCompletion} size="small" /><div><p className="font-display text-3xl font-bold">{profile.profileCompletion}%</p><p className="mt-1 text-xs text-primary-foreground/55">complete</p></div></div><p className="mt-7 text-sm leading-6 text-primary-foreground/65">A sharper profile gives your practice more useful context. Add the details an interviewer would ask about.</p><div className="mt-7 space-y-3 border-t border-primary-foreground/10 pt-5">{[['Role', current.preferredRole], ['School', current.university], ['Skills', `${profile.skills.length} listed`]].map(([label, value]) => <div className="flex items-center justify-between text-xs" key={label}><span className="text-primary-foreground/50">{label}</span><span className="font-semibold">{value || 'Add detail'}</span></div>)}</div></aside></form></PageFrame></AppShell>;
 }
 
 function Field({ label, value, onChange, type = 'text', testId }: { label: string; value: string; onChange: (value: string) => void; type?: string; testId: string }) {
@@ -272,76 +276,7 @@ function InterviewSessionPage() {
   });
   const submit = useSubmitInterviewAnswer();
   const [answer, setAnswer] = useState('');
-  const [isListening, setIsListening] = useState(false);
   const [voiceError, setVoiceError] = useState('');
-  const recognitionRef = useRef<{ stop: () => void } | null>(null);
-
-  const toggleVoiceInput = () => {
-    const SpeechRecognition = (window as Window & {
-      SpeechRecognition?: new () => {
-        lang: string;
-        continuous: boolean;
-        interimResults: boolean;
-        start: () => void;
-        stop: () => void;
-        onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-        onend: (() => void) | null;
-        onerror: (() => void) | null;
-      };
-      webkitSpeechRecognition?: new () => {
-        lang: string;
-        continuous: boolean;
-        interimResults: boolean;
-        start: () => void;
-        stop: () => void;
-        onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-        onend: (() => void) | null;
-        onerror: (() => void) | null;
-      };
-    }).SpeechRecognition ?? (window as Window & {
-      webkitSpeechRecognition?: new () => {
-        lang: string;
-        continuous: boolean;
-        interimResults: boolean;
-        start: () => void;
-        stop: () => void;
-        onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-        onend: (() => void) | null;
-        onerror: (() => void) | null;
-      };
-    }).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setVoiceError('Voice input is not supported in this browser. You can still type your answer.');
-      return;
-    }
-    if (isListening) {
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
-      setIsListening(false);
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.lang = 'en-US';
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.onresult = (event) => {
-      const transcript = Array.from({ length: event.results.length }, (_, index) => event.results[index][0].transcript).join(' ');
-      setAnswer((current) => `${current}${current ? ' ' : ''}${transcript}`.trim());
-    };
-    recognition.onend = () => {
-      recognitionRef.current = null;
-      setIsListening(false);
-    };
-    recognition.onerror = () => {
-      recognitionRef.current = null;
-      setIsListening(false);
-      setVoiceError('We could not hear that. Check microphone permission and try again.');
-    };
-    setVoiceError('');
-    setIsListening(true);
-    recognition.start();
-  };
 
   if (query.isLoading) return <AppShell><PageFrame eyebrow="Live practice" title="Opening your interview"><LoadingBlock label="Preparing your first question" /></PageFrame></AppShell>;
   if (query.isError || !query.data) return <AppShell><PageFrame eyebrow="Live practice" title="Session unavailable"><ErrorBlock onRetry={() => query.refetch()} /></PageFrame></AppShell>;
@@ -369,7 +304,7 @@ function InterviewSessionPage() {
     );
   };
 
-   return <AppShell><PageFrame eyebrow="Live practice" title={session.interview.title} description="Answer clearly and specifically. Your progress is saved after every question." action={<Link href="/interviews" className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted-foreground hover:bg-muted" data-testid="link-session-exit"><ArrowLeft className="size-4" /> Exit session</Link>}><div className="mx-auto max-w-3xl"><div className="mb-5 flex items-center justify-between text-xs text-muted-foreground"><span className="font-mono-ui uppercase tracking-[.15em]">Question {session.answeredCount + 1} of {session.totalQuestions}</span><span>{progress}% complete</span></div><div className="mb-8 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-secondary transition-all duration-300" style={{ width: `${Math.max(progress, 4)}%` }} /></div><section className="rounded-2xl bg-primary p-7 text-primary-foreground shadow-md sm:p-10"><div className="flex items-start justify-between gap-6"><div><Badge tone="amber">{question.category}</Badge><h2 className="mt-6 font-display text-3xl font-semibold leading-tight sm:text-4xl" data-testid="text-interview-question">{question.prompt}</h2></div><span className="hidden shrink-0 rounded-xl border border-primary-foreground/15 px-3 py-2 font-mono-ui text-xs text-primary-foreground/60 sm:block">Q{question.index + 1}</span></div></section><form onSubmit={submitAnswer} className="mt-5 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"><label className="block"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold">Your answer</span>{session.interview.answerMode === 'voice' && <Button type="button" variant={isListening ? 'primary' : 'outline'} className="min-h-9 px-3 text-xs" onClick={toggleVoiceInput} data-testid="button-voice-input">{isListening ? <><MicOff className="size-4" /> Stop listening</> : <><Mic className="size-4" /> Answer by voice</>}</Button>}</div><textarea value={answer} onChange={(event) => setAnswer(event.target.value)} rows={9} autoFocus className="mt-3 w-full resize-y rounded-xl border border-input bg-background px-4 py-4 text-sm leading-7 outline-none transition focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder={session.interview.answerMode === 'voice' ? 'Start voice input or type your answer here…' : 'Take a moment, then write the clearest version of your answer…'} data-testid="input-interview-answer" /><span className="mt-2 block text-xs text-muted-foreground">{session.interview.answerMode === 'voice' ? 'Voice input is transcribed in your browser. Review it before submitting.' : 'Tip: include the situation, your specific action, and the result when you can.'}</span>{voiceError && <span className="mt-2 block text-xs text-destructive" data-testid="status-voice-error">{voiceError}</span>}</label><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">Your answer is saved when you continue.</p><Button type="submit" variant="secondary" disabled={!answer.trim() || submit.isPending} className="min-w-40" data-testid="button-submit-answer">{submit.isPending ? 'Saving answer…' : session.answeredCount + 1 === session.totalQuestions ? 'Finish interview' : 'Continue'} <ArrowRight className="size-4" /></Button></div>{submit.isError && <p className="mt-4 text-sm text-destructive" data-testid="status-answer-error">We could not save that answer. Try again.</p>}</form></div></PageFrame></AppShell>;
+  return <AppShell><PageFrame eyebrow="Live practice" title={session.interview.title} description="Answer clearly and specifically. Your progress is saved after every question." action={<Link href="/interviews" className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted-foreground hover:bg-muted" data-testid="link-session-exit"><ArrowLeft className="size-4" /> Exit session</Link>}><div className="mx-auto max-w-3xl"><div className="mb-5 flex items-center justify-between text-xs text-muted-foreground"><span className="font-mono-ui uppercase tracking-[.15em]">Question {session.answeredCount + 1} of {session.totalQuestions}</span><span>{progress}% complete</span></div><div className="mb-8 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-secondary transition-all duration-300" style={{ width: `${Math.max(progress, 4)}%` }} /></div><section className="rounded-2xl bg-primary p-7 text-primary-foreground shadow-md sm:p-10"><div className="flex items-start justify-between gap-6"><div><Badge tone="amber">{question.category}</Badge><h2 className="mt-6 font-display text-3xl font-semibold leading-tight sm:text-4xl" data-testid="text-interview-question">{question.prompt}</h2></div><span className="hidden shrink-0 rounded-xl border border-primary-foreground/15 px-3 py-2 font-mono-ui text-xs text-primary-foreground/60 sm:block">Q{question.index + 1}</span></div></section><form onSubmit={submitAnswer} className="mt-5 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"><label className="block"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold">Your answer</span><VoiceInputButton value={answer} onChange={setAnswer} label="Answer by voice" onError={setVoiceError} /></div><textarea value={answer} onChange={(event) => setAnswer(event.target.value)} rows={9} autoFocus className="mt-3 w-full resize-y rounded-xl border border-input bg-background px-4 py-4 text-sm leading-7 outline-none transition focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Start voice input or type your answer here…" data-testid="input-interview-answer" /><span className="mt-2 block text-xs text-muted-foreground">Voice input is transcribed in your browser. Review it before submitting.</span>{voiceError && <span className="mt-2 block text-xs text-destructive" data-testid="status-voice-error">{voiceError}</span>}</label><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">Your answer is saved when you continue.</p><Button type="submit" variant="secondary" disabled={!answer.trim() || submit.isPending} className="min-w-40" data-testid="button-submit-answer">{submit.isPending ? 'Saving answer…' : session.answeredCount + 1 === session.totalQuestions ? 'Finish interview' : 'Continue'} <ArrowRight className="size-4" /></Button></div>{submit.isError && <p className="mt-4 text-sm text-destructive" data-testid="status-answer-error">We could not save that answer. Try again.</p>}</form></div></PageFrame></AppShell>;
 }
 
 function InterviewDetailPage() {
@@ -393,7 +328,7 @@ function NotFoundPage() {
 
 function Router() {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={HomeRedirect} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route path="/dashboard" component={() => <Protected><DashboardPage /></Protected>} /><Route path="/readiness" component={() => <Protected><AppShell><InterviewReadinessPage /></AppShell></Protected>} /><Route path="/question-bank" component={() => <Protected><AppShell><QuestionBankPage /></AppShell></Protected>} /><Route path="/study-plan" component={() => <Protected><AppShell><StudyPlanPage /></AppShell></Protected>} /><Route path="/profile" component={() => <Protected><ProfilePage /></Protected>} /><Route path="/interviews/new" component={() => <Protected><InterviewNewPage /></Protected>} /><Route path="/interviews/:interviewId/session" component={() => <Protected><InterviewSessionPage /></Protected>} /><Route path="/interviews/:interviewId" component={() => <Protected><InterviewDetailPage /></Protected>} /><Route path="/interviews" component={() => <Protected><InterviewsPage /></Protected>} /><Route component={NotFoundPage} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={HomeRedirect} /><Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} /><Route path="/dashboard" component={() => <Protected><DashboardPage /></Protected>} /><Route path="/readiness" component={() => <Protected><AppShell><InterviewReadinessPage /></AppShell></Protected>} /><Route path="/question-bank" component={() => <Protected><AppShell><QuestionBankPage /></AppShell></Protected>} /><Route path="/study-plan" component={() => <Protected><AppShell><StudyPlanPage /></AppShell></Protected>} /><Route path="/ai-coach" component={() => <Protected><AppShell><AICoachPage /></AppShell></Protected>} /><Route path="/profile" component={() => <Protected><ProfilePage /></Protected>} /><Route path="/interviews/new" component={() => <Protected><InterviewNewPage /></Protected>} /><Route path="/interviews/:interviewId/session" component={() => <Protected><InterviewSessionPage /></Protected>} /><Route path="/interviews/:interviewId" component={() => <Protected><InterviewDetailPage /></Protected>} /><Route path="/interviews" component={() => <Protected><InterviewsPage /></Protected>} /><Route component={NotFoundPage} /></Switch></ErrorBoundary>;
 }
 
 function ClerkProviderWithRoutes() {

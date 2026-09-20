@@ -21,6 +21,8 @@ import type {
 
 import type {
   CandidateProfile,
+  CoachInput,
+  CoachResponse,
   Dashboard,
   HealthStatus,
   Interview,
@@ -29,7 +31,9 @@ import type {
   InterviewSession,
   InterviewSummary,
   ListInterviewsParams,
-  ProfileUpdate
+  ProfileUpdate,
+  ResumeAnalysis,
+  ResumeAnalysisInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -378,6 +382,182 @@ export const useUpdateProfile = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateProfileMutationOptions(options));
+    }
+
+export const getAnalyzeResumeUrl = () => {
+
+
+
+
+  return `/api/ai/resume-analysis`
+}
+
+/**
+ * @summary Analyze a resume with Gemini
+ */
+export const analyzeResume = async (resumeAnalysisInput: ResumeAnalysisInput, options?: Parameters<typeof customFetch>[1]): Promise<ResumeAnalysis> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ResumeAnalysis>(getAnalyzeResumeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(resumeAnalysisInput)
+  }
+);}
+
+
+
+
+
+export const getAnalyzeResumeMutationKey = () => ['analyzeResume'] as const;
+
+export const getAnalyzeResumeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeResume>>, TError,AnalyzeResumeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeResume>>, TError,AnalyzeResumeMutationVariables, TContext> => {
+
+const mutationKey = getAnalyzeResumeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeResume>>, AnalyzeResumeMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  analyzeResume(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeResumeMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeResume>>>
+    export type AnalyzeResumeMutationBody = BodyType<ResumeAnalysisInput>
+    export type AnalyzeResumeMutationError = ErrorType<void>
+    export type AnalyzeResumeMutationVariables = {data: BodyType<ResumeAnalysisInput>}
+
+    /**
+ * @summary Analyze a resume with Gemini
+ */
+export const useAnalyzeResume = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeResume>>, TError,AnalyzeResumeMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeResume>>,
+        TError,
+        AnalyzeResumeMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAnalyzeResumeMutationOptions(options));
+    }
+
+export const getAskCoachUrl = () => {
+
+
+
+
+  return `/api/ai/coach`
+}
+
+/**
+ * @summary Ask the AI interview coach a question
+ */
+export const askCoach = async (coachInput: CoachInput, options?: Parameters<typeof customFetch>[1]): Promise<CoachResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CoachResponse>(getAskCoachUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(coachInput)
+  }
+);}
+
+
+
+
+
+export const getAskCoachMutationKey = () => ['askCoach'] as const;
+
+export const getAskCoachMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askCoach>>, TError,AskCoachMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof askCoach>>, TError,AskCoachMutationVariables, TContext> => {
+
+const mutationKey = getAskCoachMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof askCoach>>, AskCoachMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  askCoach(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AskCoachMutationResult = NonNullable<Awaited<ReturnType<typeof askCoach>>>
+    export type AskCoachMutationBody = BodyType<CoachInput>
+    export type AskCoachMutationError = ErrorType<void>
+    export type AskCoachMutationVariables = {data: BodyType<CoachInput>}
+
+    /**
+ * @summary Ask the AI interview coach a question
+ */
+export const useAskCoach = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askCoach>>, TError,AskCoachMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof askCoach>>,
+        TError,
+        AskCoachMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAskCoachMutationOptions(options));
     }
 
 export const getListInterviewsUrl = (params?: ListInterviewsParams,) => {

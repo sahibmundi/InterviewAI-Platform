@@ -54,6 +54,47 @@ export interface ProfileUpdate {
   yearsOfExperience?: number;
 }
 
+export interface ResumeAnalysisInput {
+  /**
+     * @minLength 40
+     * @maxLength 30000
+     */
+  resumeText: string;
+  /** @maxLength 16000 */
+  jobDescription?: string;
+}
+
+export interface ResumeAnalysis {
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  overallScore: number;
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  keywords: string[];
+  rewrittenBullets: string[];
+  nextSteps: string[];
+}
+
+export interface CoachInput {
+  /**
+     * @minLength 3
+     * @maxLength 6000
+     */
+  question: string;
+  /** @maxLength 20000 */
+  context?: string;
+}
+
+export interface CoachResponse {
+  answer: string;
+  framework: string;
+  followUps: string[];
+  sources: string[];
+}
+
 export interface ReadinessMetric {
   label: string;
   /**
