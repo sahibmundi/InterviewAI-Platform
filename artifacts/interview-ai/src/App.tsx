@@ -4,7 +4,7 @@ import {
   ArrowLeft, ArrowRight, BarChart3, BookOpen, BrainCircuit, BriefcaseBusiness, Check,
   ChevronDown, CircleAlert, Clock3, FileText, GraduationCap, Headphones,
   LayoutDashboard, LockKeyhole, Menu, Play, Plus, RotateCcw, Save,
-  Settings, Sparkles, Target, UserRound, UsersRound, X,
+  Settings, Sparkles, Target, UserRound, UsersRound, Volume2, VolumeX, X,
 } from 'lucide-react';
 import {
   getGetDashboardQueryKey, getGetInterviewQueryKey, getGetProfileQueryKey,
@@ -85,29 +85,6 @@ function ScoreRing({ score, size = 'large' }: { score: number; size?: 'large' | 
   </div>;
 }
 
-function ModuleCompletionCard() {
-  const [completed, setCompleted] = useState<Record<string, boolean>>({});
-  const sync = () => {
-    try {
-      setCompleted(JSON.parse(window.localStorage.getItem('interviewai.study-plan') ?? '{}') as Record<string, boolean>);
-    } catch {
-      setCompleted({});
-    }
-  };
-  useEffect(() => {
-    sync();
-    window.addEventListener('storage', sync);
-    window.addEventListener('interviewai.study-plan:updated', sync);
-    return () => {
-      window.removeEventListener('storage', sync);
-      window.removeEventListener('interviewai.study-plan:updated', sync);
-    };
-  }, []);
-  const done = STUDY_PLAN.filter(([id]) => completed[id]).length;
-  const percentage = Math.round((done / STUDY_PLAN.length) * 100);
-  return <section className="mx-auto mb-5 max-w-[1240px] px-4 sm:px-7 lg:px-10" data-testid="card-module-completion"><div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"><div><p className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-muted-foreground">Learning runway</p><h2 className="mt-2 font-display text-2xl font-semibold">Course completion across all modules</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{done} of {STUDY_PLAN.length} modules completed. Keep the loop small and consistent.</p></div><div className="flex items-center gap-5"><div className="relative grid size-20 place-items-center rounded-full" style={{ background: `conic-gradient(hsl(var(--secondary)) ${percentage * 3.6}deg, hsl(var(--muted)) 0deg)` }}><div className="grid size-14 place-items-center rounded-full bg-card font-display text-lg font-bold">{percentage}%</div></div><div className="min-w-44 space-y-2">{STUDY_PLAN.slice(0, 5).map(([id, , title]) => <div key={id} className="flex items-center gap-2 text-xs"><span className={cn('size-2 rounded-full', completed[id] ? 'bg-secondary' : 'bg-border')} /><span className={cn('truncate', completed[id] ? 'font-semibold' : 'text-muted-foreground')}>{title}</span></div>)}</div></div></div><div className="mt-5 grid grid-cols-7 gap-1.5">{STUDY_PLAN.map(([id, day]) => <div key={id} className="space-y-1"><div className={cn('h-2 rounded-full', completed[id] ? 'bg-secondary' : 'bg-muted')} /><p className="text-center font-mono-ui text-[9px] text-muted-foreground">{day.replace('Day ', 'D')}</p></div>)}</div></div></section>;
-}
-
 function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
@@ -132,7 +109,7 @@ function AppShell({ children }: { children: ReactNode }) {
       <div className="mt-auto rounded-2xl border border-sidebar-border bg-sidebar-accent/50 p-4"><div className="flex items-start gap-3"><Sparkles className="mt-0.5 size-4 text-sidebar-primary" /><div><p className="text-sm font-semibold text-sidebar-foreground">Practice with intent.</p><p className="mt-1 text-xs leading-5 text-sidebar-foreground/55">One focused session beats an hour of scrolling.</p></div></div><Link href="/interviews/new" className="mt-4 flex min-h-10 items-center justify-center rounded-lg bg-sidebar-primary px-3 text-xs font-bold text-sidebar-primary-foreground hover:brightness-105" data-testid="link-sidebar-new-interview">Start practice</Link></div>
       <div className="mt-5 flex items-center gap-3 border-t border-sidebar-border pt-5"><div className="grid size-9 place-items-center rounded-full bg-sidebar-primary font-mono-ui text-xs font-bold text-sidebar-primary-foreground" data-testid="text-sidebar-avatar">AR</div><div className="min-w-0"><p className="truncate text-sm font-semibold text-sidebar-foreground">Alex Rivera</p><p className="truncate text-xs text-sidebar-foreground/45">Software candidate</p></div><Link href="/profile" className="ml-auto text-sidebar-foreground/50 hover:text-sidebar-foreground" data-testid="link-sidebar-settings"><Settings className="size-4" /></Link></div>
     </aside>
-     <main className="lg:pl-[248px]">{location === '/dashboard' && <ModuleCompletionCard />}{children}</main>
+    <main className="lg:pl-[248px]">{children}</main>
   </div>;
 }
 
@@ -300,6 +277,7 @@ function InterviewSessionPage() {
   const submit = useSubmitInterviewAnswer();
   const [answer, setAnswer] = useState('');
   const [voiceError, setVoiceError] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   if (query.isLoading) return <AppShell><PageFrame eyebrow="Live practice" title="Opening your interview"><LoadingBlock label="Preparing your first question" /></PageFrame></AppShell>;
   if (query.isError || !query.data) return <AppShell><PageFrame eyebrow="Live practice" title="Session unavailable"><ErrorBlock onRetry={() => query.refetch()} /></PageFrame></AppShell>;
@@ -311,6 +289,30 @@ function InterviewSessionPage() {
 
   const question = session.currentQuestion;
   const progress = Math.round((session.answeredCount / session.totalQuestions) * 100);
+  const speakQuestion = () => {
+    if (!('speechSynthesis' in window)) {
+      setVoiceError('Question playback is not supported in this browser. You can still read the question.');
+      return;
+    }
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    setVoiceError('');
+    const utterance = new SpeechSynthesisUtterance(question.prompt);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.92;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setVoiceError('Question playback stopped. You can still read the question.');
+    };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
   const submitAnswer = (event: FormEvent) => {
     event.preventDefault();
     const trimmed = answer.trim();
@@ -327,7 +329,7 @@ function InterviewSessionPage() {
     );
   };
 
-  return <AppShell><PageFrame eyebrow="Live practice" title={session.interview.title} description="Answer clearly and specifically. Your progress is saved after every question." action={<Link href="/interviews" className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted-foreground hover:bg-muted" data-testid="link-session-exit"><ArrowLeft className="size-4" /> Exit session</Link>}><div className="mx-auto max-w-3xl"><div className="mb-5 flex items-center justify-between text-xs text-muted-foreground"><span className="font-mono-ui uppercase tracking-[.15em]">Question {session.answeredCount + 1} of {session.totalQuestions}</span><span>{progress}% complete</span></div><div className="mb-8 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-secondary transition-all duration-300" style={{ width: `${Math.max(progress, 4)}%` }} /></div><section className="rounded-2xl bg-primary p-7 text-primary-foreground shadow-md sm:p-10"><div className="flex items-start justify-between gap-6"><div><Badge tone="amber">{question.category}</Badge><h2 className="mt-6 font-display text-3xl font-semibold leading-tight sm:text-4xl" data-testid="text-interview-question">{question.prompt}</h2></div><span className="hidden shrink-0 rounded-xl border border-primary-foreground/15 px-3 py-2 font-mono-ui text-xs text-primary-foreground/60 sm:block">Q{question.index + 1}</span></div></section><form onSubmit={submitAnswer} className="mt-5 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"><label className="block"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold">Your answer</span><VoiceInputButton value={answer} onChange={setAnswer} label="Answer by voice" onError={setVoiceError} /></div><textarea value={answer} onChange={(event) => setAnswer(event.target.value)} rows={9} autoFocus className="mt-3 w-full resize-y rounded-xl border border-input bg-background px-4 py-4 text-sm leading-7 outline-none transition focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Start voice input or type your answer here…" data-testid="input-interview-answer" /><span className="mt-2 block text-xs text-muted-foreground">Voice input is transcribed in your browser. Review it before submitting.</span>{voiceError && <span className="mt-2 block text-xs text-destructive" data-testid="status-voice-error">{voiceError}</span>}</label><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">Your answer is saved when you continue.</p><Button type="submit" variant="secondary" disabled={!answer.trim() || submit.isPending} className="min-w-40" data-testid="button-submit-answer">{submit.isPending ? 'Saving answer…' : session.answeredCount + 1 === session.totalQuestions ? 'Finish interview' : 'Continue'} <ArrowRight className="size-4" /></Button></div>{submit.isError && <p className="mt-4 text-sm text-destructive" data-testid="status-answer-error">We could not save that answer. Try again.</p>}</form></div></PageFrame></AppShell>;
+  return <AppShell><PageFrame eyebrow="Live practice" title={session.interview.title} description="Answer clearly and specifically. Your progress is saved after every question." action={<Link href="/interviews" className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted-foreground hover:bg-muted" data-testid="link-session-exit"><ArrowLeft className="size-4" /> Exit session</Link>}><div className="mx-auto max-w-3xl"><div className="mb-5 flex items-center justify-between text-xs text-muted-foreground"><span className="font-mono-ui uppercase tracking-[.15em]">Question {session.answeredCount + 1} of {session.totalQuestions}</span><span>{progress}% complete</span></div><div className="mb-8 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-secondary transition-all duration-300" style={{ width: `${Math.max(progress, 4)}%` }} /></div><section className="rounded-2xl bg-primary p-7 text-primary-foreground shadow-md sm:p-10"><div className="flex items-start justify-between gap-6"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><Badge tone="amber">{question.category}</Badge><button type="button" onClick={speakQuestion} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-primary-foreground/20 px-3 text-xs font-semibold text-primary-foreground transition hover:bg-primary-foreground/10" aria-label={isSpeaking ? 'Stop reading question' : 'Read question aloud'} data-testid="button-read-question">{isSpeaking ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}{isSpeaking ? 'Stop reading' : 'Read aloud'}</button></div><h2 className="mt-6 font-display text-3xl font-semibold leading-tight sm:text-4xl" data-testid="text-interview-question">{question.prompt}</h2></div><span className="hidden shrink-0 rounded-xl border border-primary-foreground/15 px-3 py-2 font-mono-ui text-xs text-primary-foreground/60 sm:block">Q{question.index + 1}</span></div></section><form onSubmit={submitAnswer} className="mt-5 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"><label className="block"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold">Your answer</span><VoiceInputButton value={answer} onChange={setAnswer} label="Answer by voice" onError={setVoiceError} /></div><textarea value={answer} onChange={(event) => setAnswer(event.target.value)} rows={9} autoFocus className="mt-3 w-full resize-y rounded-xl border border-input bg-background px-4 py-4 text-sm leading-7 outline-none transition focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Start voice input or type your answer here…" data-testid="input-interview-answer" /><span className="mt-2 block text-xs text-muted-foreground">Voice input is transcribed in your browser. Review it before submitting.</span>{voiceError && <span className="mt-2 block text-xs text-destructive" data-testid="status-voice-error">{voiceError}</span>}</label><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">Your answer is saved when you continue.</p><Button type="submit" variant="secondary" disabled={!answer.trim() || submit.isPending} className="min-w-40" data-testid="button-submit-answer">{submit.isPending ? 'Saving answer…' : session.answeredCount + 1 === session.totalQuestions ? 'Finish interview' : 'Continue'} <ArrowRight className="size-4" /></Button></div>{submit.isError && <p className="mt-4 text-sm text-destructive" data-testid="status-answer-error">We could not save that answer. Try again.</p>}</form></div></PageFrame></AppShell>;
 }
 
 function InterviewDetailPage() {

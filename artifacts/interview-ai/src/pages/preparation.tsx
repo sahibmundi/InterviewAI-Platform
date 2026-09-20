@@ -4,6 +4,7 @@ import {
   BookmarkCheck,
   Check,
   CheckCircle2,
+  ChevronDown,
   ExternalLink,
   Laptop,
   Search,
@@ -286,33 +287,70 @@ export function QuestionBankPage() {
   );
 }
 
-export const STUDY_PLAN = [
-  ['day-1', 'Day 1', 'DSA foundations', 'Review arrays, maps, graph traversal, and state transitions.'],
-  ['day-2', 'Day 2', 'Database performance', 'Use EXPLAIN, compare indexes, and describe write trade-offs.'],
-  ['day-3', 'Day 3', 'Web performance', 'Trace a browser request and identify loading, caching, and rendering wins.'],
-  ['day-4', 'Day 4', 'System design', 'Sketch one service and name reliability, scale, security, and cost trade-offs.'],
-  ['day-5', 'Day 5', 'Project defense', 'Prepare architecture, challenge, ownership, and measurable outcomes.'],
-  ['day-6', 'Day 6', 'Behavioral stories', 'Write two STAR stories from your real experience and rehearse aloud.'],
-  ['day-7', 'Day 7', 'Full mock interview', 'Run a mixed session and review the practice report.'],
-] as const;
+export type StudyPlanUnit = {
+  id: string;
+  day: string;
+  title: string;
+  description: string;
+  lesson: string;
+  keyPoints: string[];
+  practice: string;
+};
+
+export const STUDY_PLAN: StudyPlanUnit[] = [
+  { id: 'day-1', day: 'Day 1', title: 'DSA foundations', description: 'Review arrays, maps, graph traversal, and state transitions.', lesson: 'Strong coding answers explain the choice before the syntax. Start by clarifying the input, output, constraints, and edge cases. Use arrays for ordered data, maps for fast key-based lookup, stacks for last-in-first-out work, and queues for first-in-first-out work. For graphs, describe whether you need breadth-first search for shortest unweighted paths or depth-first search for exhaustive traversal and connected components.', keyPoints: ['State the brute-force approach first, then improve it.', 'Name the time and space complexity before coding.', 'Test empty input, duplicates, one item, and the largest realistic input.'], practice: 'Talk through the first non-repeating character problem. Explain the data structure, complexity, and two edge cases before writing code.' },
+  { id: 'day-2', day: 'Day 2', title: 'Database performance', description: 'Use EXPLAIN, compare indexes, and describe write trade-offs.', lesson: 'Database performance starts with evidence. Read a query plan to see whether the database scans a whole table, uses an index, estimates rows accurately, and spends time sorting or joining. Indexes can make selective reads much faster, but they cost storage and make inserts, updates, and deletes more expensive. A good interview answer connects the index to the actual filter, sort, or join pattern instead of adding indexes everywhere.', keyPoints: ['Use EXPLAIN ANALYZE carefully and compare estimated versus actual rows.', 'Index columns used by frequent selective filters and joins.', 'Mention connection pooling, pagination, and avoiding N+1 queries when relevant.'], practice: 'Explain how you would investigate a slow endpoint that reads orders by customer and sorts by newest first.' },
+  { id: 'day-3', day: 'Day 3', title: 'Web performance', description: 'Trace a browser request and identify loading, caching, and rendering wins.', lesson: 'Trace the full path: browser navigation, DNS, connection setup, request, server work, response, parsing, and rendering. Improve the largest bottleneck first. Use compressed assets, caching headers, code splitting, lazy loading, and efficient data fetching when they address a measured problem. Explain the user-visible metric you are improving, such as time to first byte, largest contentful paint, interaction latency, or total blocking time.', keyPoints: ['Measure before changing the frontend or backend.', 'Separate network, server, JavaScript, rendering, and third-party costs.', 'Keep loading states useful and avoid blocking the entire page for one slow request.'], practice: 'Walk through how you would debug a dashboard that is fast for developers but slow for real users on mobile.' },
+  { id: 'day-4', day: 'Day 4', title: 'System design', description: 'Sketch one service and name reliability, scale, security, and cost trade-offs.', lesson: 'A system-design answer is a sequence of decisions, not a list of fashionable tools. Clarify users, traffic, latency, consistency, and failure expectations. Start with a simple request flow, then identify the first bottleneck and add only the component that solves it. Discuss data ownership, idempotency, retries, observability, access control, and how the design degrades when a dependency fails.', keyPoints: ['Write assumptions and rough scale numbers down.', 'Choose synchronous or asynchronous work based on user experience and consistency needs.', 'Explain one failure mode and the recovery path.'], practice: 'Design a notification service. Cover API shape, queueing, deduplication, retries, rate limits, and monitoring.' },
+  { id: 'day-5', day: 'Day 5', title: 'Project defense', description: 'Prepare architecture, challenge, ownership, and measurable outcomes.', lesson: 'Project questions are strongest when they show what you personally decided and what changed because of your work. Use a clear arc: context, constraint, options, decision, implementation, result, and reflection. Be precise about your ownership without minimizing collaborators. If you do not remember a number, say what you measured or how you would measure it rather than inventing an outcome.', keyPoints: ['Separate team scope from your individual contribution.', 'Name a real trade-off and why it was acceptable.', 'Close with a measurable result or a concrete lesson.'], practice: 'Give a two-minute walkthrough of a project, then answer: what broke, what would you change, and how did you know it worked?' },
+  { id: 'day-6', day: 'Day 6', title: 'Behavioral stories', description: 'Write two STAR stories from your real experience and rehearse aloud.', lesson: 'Use STAR as a speaking guide: briefly set the situation, define the task, spend most of the answer on your actions, and finish with the result and learning. The interviewer is listening for judgment, collaboration, ownership, and reflection. Avoid a long background section. Make the decision and your contribution easy to find, then invite a follow-up instead of trying to cover every detail.', keyPoints: ['Use specific actions: “I compared…”, “I proposed…”, “I changed…”.', 'Quantify scope or impact when you have reliable evidence.', 'Include what you learned, especially when the result was imperfect.'], practice: 'Rehearse one story about conflict and one about failure. Keep each to two minutes, then ask yourself what evidence the interviewer still needs.' },
+  { id: 'day-7', day: 'Day 7', title: 'Full mock interview', description: 'Run a mixed session and review the practice report.', lesson: 'Treat this as a real interview: listen to the full question, pause briefly, clarify assumptions, and think aloud without narrating every keystroke. A mixed session should move through background, behavioral evidence, technical depth, problem solving, and system-design trade-offs. The interviewer will ask follow-ups when an answer is vague, so support every major claim with an example, decision, or result.', keyPoints: ['Start with a concise introduction and role target.', 'Answer the question asked before expanding into related knowledge.', 'After the session, review weak categories and choose one next practice action.'], practice: 'Start the full mixed mock interview below. Choose 10–20 questions, answer as if an interviewer is in the room, and review the report when you finish.' },
+];
 
 export function StudyPlanPage() {
   const [completed, toggle] = useBooleanMap('interviewai.study-plan');
-  const done = STUDY_PLAN.filter(([id]) => completed[id]).length;
+  const [openUnit, setOpenUnit] = useState<string | null>('day-1');
+  const done = STUDY_PLAN.filter(({ id }) => completed[id]).length;
   return (
-    <PrepFrame eyebrow="Prepare" title="A plan you can finish." description="A focused seven-day loop that turns your weaker signals into specific practice. Mark work complete as you go.">
+    <PrepFrame eyebrow="Prepare" title="A plan you can finish." description="Open a unit to study the lesson, complete the practice prompt, then confirm that you understand it. Opening a unit never marks it complete.">
       <div className="rounded-2xl bg-primary p-6 text-primary-foreground shadow-md sm:p-8">
         <p className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-primary-foreground/55">This week</p>
         <div className="mt-2 flex items-end justify-between gap-4"><h2 className="font-display text-3xl font-semibold">{done}/7 complete</h2><span className="text-sm text-primary-foreground/65">{Math.round((done / 7) * 100)}% of the plan</span></div>
         <div className="mt-5 h-2 overflow-hidden rounded-full bg-primary-foreground/15"><div className="h-full rounded-full bg-secondary transition-all" style={{ width: `${(done / 7) * 100}%` }} /></div>
       </div>
       <div className="mt-5 space-y-3">
-        {STUDY_PLAN.map(([id, day, title, description]) => (
-          <button type="button" key={id} onClick={() => toggle(id)} className={cn('flex w-full items-center gap-4 rounded-2xl border bg-card p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md', completed[id] ? 'border-secondary/50' : 'border-border')}>
-            <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl font-mono-ui text-xs font-bold', completed[id] ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground')}>{completed[id] ? <Check className="size-5" /> : day.replace('Day ', 'D')}</span>
-            <span className="min-w-0 flex-1"><span className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-muted-foreground">{day}</span><span className={cn('mt-1 block font-display text-lg font-semibold', completed[id] && 'text-muted-foreground line-through')}>{title}</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">{description}</span></span>
-          </button>
-        ))}
+        {STUDY_PLAN.map((unit) => {
+          const isOpen = openUnit === unit.id;
+          return (
+            <article key={unit.id} className={cn('overflow-hidden rounded-2xl border bg-card shadow-sm transition', completed[unit.id] ? 'border-secondary/50' : 'border-border')}>
+              <button type="button" onClick={() => setOpenUnit(isOpen ? null : unit.id)} className="flex w-full items-center gap-4 p-5 text-left hover:bg-muted/40" aria-expanded={isOpen} data-testid={`button-study-${unit.id}`}>
+                <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl font-mono-ui text-xs font-bold', completed[unit.id] ? 'bg-secondary text-secondary-foreground' : 'bg-muted text-muted-foreground')}>{completed[unit.id] ? <Check className="size-5" /> : unit.day.replace('Day ', 'D')}</span>
+                <span className="min-w-0 flex-1"><span className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-muted-foreground">{unit.day}</span><span className={cn('mt-1 block font-display text-lg font-semibold', completed[unit.id] && 'text-muted-foreground')}>{unit.title}</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">{unit.description}</span></span>
+                <ChevronDown className={cn('size-5 shrink-0 text-muted-foreground transition-transform', isOpen && 'rotate-180')} />
+              </button>
+              {isOpen && (
+                <div className="border-t border-border px-5 pb-5 pt-5 sm:px-6">
+                  <p className="text-sm leading-7 text-foreground">{unit.lesson}</p>
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <section className="rounded-xl bg-muted/60 p-4">
+                      <p className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-muted-foreground">Remember</p>
+                      <ul className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">{unit.keyPoints.map((point) => <li key={point} className="flex gap-2"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-secondary" />{point}</li>)}</ul>
+                    </section>
+                    <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-4">
+                      <p className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-secondary">Practice prompt</p>
+                      <p className="mt-3 text-sm leading-6">{unit.practice}</p>
+                    </section>
+                  </div>
+                  <div className="mt-5 flex flex-col gap-3 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div><p className="text-sm font-semibold">{completed[unit.id] ? 'Unit complete' : 'Finished studying this unit?'}</p><p className="mt-1 text-xs text-muted-foreground">Only confirm after reading the lesson and trying the practice prompt.</p></div>
+                    <button type="button" onClick={() => toggle(unit.id)} className={cn('inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold', completed[unit.id] ? 'border border-border bg-card text-foreground' : 'bg-primary text-primary-foreground')} data-testid={`button-complete-${unit.id}`}>{completed[unit.id] ? <CheckCircle2 className="size-4" /> : <Check className="size-4" />}{completed[unit.id] ? 'Mark as not complete' : 'I understand this unit'}</button>
+                  </div>
+                  {unit.id === 'day-7' && <Link href="/interviews/new" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-secondary px-4 text-sm font-bold text-secondary-foreground shadow-sm hover:-translate-y-0.5" data-testid="link-study-plan-mock-interview">Start the full mock interview</Link>}
+                </div>
+              )}
+            </article>
+          );
+        })}
       </div>
     </PrepFrame>
   );
