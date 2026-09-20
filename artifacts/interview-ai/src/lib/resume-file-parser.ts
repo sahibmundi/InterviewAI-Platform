@@ -1,3 +1,5 @@
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
 const MAX_RESUME_FILE_BYTES = 10 * 1024 * 1024;
 
 export const RESUME_FILE_ACCEPT =
@@ -24,10 +26,10 @@ export async function extractResumeText(file: File): Promise<string> {
 
   if (fileName.endsWith(".pdf") || file.type === "application/pdf") {
     const pdfjs = await import("pdfjs-dist/build/pdf.mjs");
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
     const document = await pdfjs
       .getDocument({
         data: new Uint8Array(await file.arrayBuffer()),
-        disableWorker: true,
       })
       .promise;
 
