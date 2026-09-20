@@ -1,5 +1,7 @@
 import { logger } from "./logger";
 
+// Keep this configurable. Gemini currently recommends 3.6 Flash for new users;
+// older 2.5 models may appear in the model list but reject generation requests.
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
 
 type GeminiResponse = {

@@ -36,9 +36,7 @@ export async function extractResumeText(file: File): Promise<string> {
       for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
         const page = await document.getPage(pageNumber);
         const content = await page.getTextContent();
-        const pageText = content.items
-          .map((item) => ("str" in item ? item.str : ""))
-          .join(" ");
+        const pageText = content.items.map((item) => item.str ?? "").join(" ");
         pages.push(pageText);
       }
       return normalizeResumeText(pages.join("\n\n"));

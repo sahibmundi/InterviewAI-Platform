@@ -17,6 +17,7 @@ import {
 } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/requireAuth";
 import { getOrCreateCurrentUser } from "../lib/current-user";
+import { generateGeminiText, parseJsonResponse } from "../lib/gemini";
 
 const router: IRouter = Router();
 router.use(requireAuth);
@@ -135,7 +136,7 @@ function scoreAnswer(answer: string) {
   return Math.max(20, Math.min(95, score));
 }
 
-function buildEvaluation(questions: PracticeQuestion[], answers: StoredAnswer[]) {
+function heuristicEvaluation(questions: PracticeQuestion[], answers: StoredAnswer[]) {
   const categoryScores = new Map<string, number[]>();
   answers.forEach((answer) => {
     const category = questions[answer.questionIndex]?.category ?? "communication";
@@ -166,6 +167,60 @@ function buildEvaluation(questions: PracticeQuestion[], answers: StoredAnswer[])
     weakAreas,
     recommendedTopics: weakAreas.length > 0 ? weakAreas.slice(0, 3) : ["Specific examples", "Clear structure"],
   };
+}
+
+async function buildEvaluation(
+  questions: PracticeQuestion[],
+  answers: StoredAnswer[],
+) {
+  const transcript = answers
+    .map((answer) => {
+      const question = questions[answer.questionIndex];
+      return `QUESTION (${question?.category ?? "communication"}): ${question?.prompt ?? "Unknown"}\nANSWER: ${answer.answer}`;
+    })
+    .join("\n\n");
+
+  try {
+    const raw = await generateGeminiText(`You are a rigorous but constructive interview evaluator.
+Score the candidate's actual answers below. Do not score the candidate's identity, accent, gender, or writing style.
+Evaluate evidence, correctness, structure, ownership, trade-offs, specificity, and communication.
+Return ONLY valid JSON with exactly:
+{
+  "score": integer 0-100,
+  "categoryScores": { "category name": integer 0-100 },
+  "strongAreas": ["2-4 specific strengths"],
+  "weakAreas": ["2-4 specific improvement areas"],
+  "recommendedTopics": ["3-5 concrete topics to practice next"]
+}
+Use the question category as the category key where possible. A short answer should score lower for missing evidence, but do not reward length by itself.
+
+${transcript}`);
+    const result = parseJsonResponse<{
+      score?: number;
+      categoryScores?: Record<string, number>;
+      strongAreas?: string[];
+      weakAreas?: string[];
+      recommendedTopics?: string[];
+    }>(raw);
+    const categoryScores = Object.fromEntries(
+      Object.entries(result.categoryScores ?? {})
+        .map(([category, score]) => [category, Math.max(0, Math.min(100, Math.round(Number(score) || 0)))] as [string, number])
+        .filter(([, score]) => score > 0),
+    );
+    return {
+      score: Math.max(0, Math.min(100, Math.round(Number(result.score) || 0))),
+      categoryScores,
+      strongAreas: Array.isArray(result.strongAreas) ? result.strongAreas.filter(Boolean).slice(0, 6) : [],
+      weakAreas: Array.isArray(result.weakAreas) ? result.weakAreas.filter(Boolean).slice(0, 6) : [],
+      recommendedTopics: Array.isArray(result.recommendedTopics)
+        ? result.recommendedTopics.filter(Boolean).slice(0, 6)
+        : [],
+    };
+  } catch {
+    // Keep the interview usable if the provider is temporarily unavailable.
+    // The normal path is Gemini; this only protects an in-progress session.
+    return heuristicEvaluation(questions, answers);
+  }
 }
 
 function toSummary(interview: typeof interviewsTable.$inferSelect) {
@@ -347,7 +402,9 @@ router.post("/interviews/:interviewId/answers", async (req, res): Promise<void> 
     },
   ];
   const isComplete = nextAnswers.length === questions.length;
-  const evaluation = buildEvaluation(questions, nextAnswers);
+   const evaluation = isComplete
+     ? await buildEvaluation(questions, nextAnswers)
+     : heuristicEvaluation(questions, nextAnswers);
   const [updated] = await db
     .update(interviewsTable)
     .set({

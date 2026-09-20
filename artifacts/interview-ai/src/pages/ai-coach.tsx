@@ -128,15 +128,12 @@ export function AICoachPage() {
     <SectionFrame>
       <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono-ui text-[10px] font-medium uppercase tracking-[.22em] text-muted-foreground">Gemini workspace</p>
+          <p className="font-mono-ui text-[10px] font-medium uppercase tracking-[.22em] text-muted-foreground">Interview intelligence</p>
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Ask better. Prepare deeper.</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
             Analyze your resume against a role, pressure-test your stories, and turn dense technical topics into practice-ready answers.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 self-start rounded-full bg-secondary/15 px-3 py-2 text-xs font-semibold text-[hsl(27_78%_34%)] sm:self-auto">
-          <Sparkles className="size-4" /> Powered by Gemini
-        </span>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
@@ -201,7 +198,7 @@ export function AICoachPage() {
             <textarea value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} rows={6} className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-6 outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" placeholder="Paste the role, responsibilities, and requirements…" />
           </label>
           <div className="mt-5 flex items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">Gemini reviews content you submit; it does not predict hiring outcomes.</p>
+            <p className="text-xs text-muted-foreground">Your submitted content is reviewed for practice guidance; it does not predict hiring outcomes.</p>
              <button type="submit" disabled={analyze.isPending || isParsingResume || resumeText.trim().length < 40} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-secondary px-4 text-sm font-bold text-secondary-foreground shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" data-testid="button-analyze-resume">
               {analyze.isPending ? "Reviewing…" : "Analyze resume"} <ArrowRight className="size-4" />
             </button>

@@ -21,7 +21,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { VoiceInputButton } from '@/components/voice-input';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { InterviewReadinessPage, QuestionBankPage, StudyPlanPage } from '@/pages/preparation';
+import { InterviewReadinessPage, QuestionBankPage, STUDY_PLAN, StudyPlanPage } from '@/pages/preparation';
 import { AICoachPage } from '@/pages/ai-coach';
 
 const queryClient = new QueryClient();
@@ -85,6 +85,29 @@ function ScoreRing({ score, size = 'large' }: { score: number; size?: 'large' | 
   </div>;
 }
 
+function ModuleCompletionCard() {
+  const [completed, setCompleted] = useState<Record<string, boolean>>({});
+  const sync = () => {
+    try {
+      setCompleted(JSON.parse(window.localStorage.getItem('interviewai.study-plan') ?? '{}') as Record<string, boolean>);
+    } catch {
+      setCompleted({});
+    }
+  };
+  useEffect(() => {
+    sync();
+    window.addEventListener('storage', sync);
+    window.addEventListener('interviewai.study-plan:updated', sync);
+    return () => {
+      window.removeEventListener('storage', sync);
+      window.removeEventListener('interviewai.study-plan:updated', sync);
+    };
+  }, []);
+  const done = STUDY_PLAN.filter(([id]) => completed[id]).length;
+  const percentage = Math.round((done / STUDY_PLAN.length) * 100);
+  return <section className="mx-auto mb-5 max-w-[1240px] px-4 sm:px-7 lg:px-10" data-testid="card-module-completion"><div className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"><div><p className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-muted-foreground">Learning runway</p><h2 className="mt-2 font-display text-2xl font-semibold">Course completion across all modules</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{done} of {STUDY_PLAN.length} modules completed. Keep the loop small and consistent.</p></div><div className="flex items-center gap-5"><div className="relative grid size-20 place-items-center rounded-full" style={{ background: `conic-gradient(hsl(var(--secondary)) ${percentage * 3.6}deg, hsl(var(--muted)) 0deg)` }}><div className="grid size-14 place-items-center rounded-full bg-card font-display text-lg font-bold">{percentage}%</div></div><div className="min-w-44 space-y-2">{STUDY_PLAN.slice(0, 5).map(([id, , title]) => <div key={id} className="flex items-center gap-2 text-xs"><span className={cn('size-2 rounded-full', completed[id] ? 'bg-secondary' : 'bg-border')} /><span className={cn('truncate', completed[id] ? 'font-semibold' : 'text-muted-foreground')}>{title}</span></div>)}</div></div></div><div className="mt-5 grid grid-cols-7 gap-1.5">{STUDY_PLAN.map(([id, day]) => <div key={id} className="space-y-1"><div className={cn('h-2 rounded-full', completed[id] ? 'bg-secondary' : 'bg-muted')} /><p className="text-center font-mono-ui text-[9px] text-muted-foreground">{day.replace('Day ', 'D')}</p></div>)}</div></div></section>;
+}
+
 function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
@@ -109,7 +132,7 @@ function AppShell({ children }: { children: ReactNode }) {
       <div className="mt-auto rounded-2xl border border-sidebar-border bg-sidebar-accent/50 p-4"><div className="flex items-start gap-3"><Sparkles className="mt-0.5 size-4 text-sidebar-primary" /><div><p className="text-sm font-semibold text-sidebar-foreground">Practice with intent.</p><p className="mt-1 text-xs leading-5 text-sidebar-foreground/55">One focused session beats an hour of scrolling.</p></div></div><Link href="/interviews/new" className="mt-4 flex min-h-10 items-center justify-center rounded-lg bg-sidebar-primary px-3 text-xs font-bold text-sidebar-primary-foreground hover:brightness-105" data-testid="link-sidebar-new-interview">Start practice</Link></div>
       <div className="mt-5 flex items-center gap-3 border-t border-sidebar-border pt-5"><div className="grid size-9 place-items-center rounded-full bg-sidebar-primary font-mono-ui text-xs font-bold text-sidebar-primary-foreground" data-testid="text-sidebar-avatar">AR</div><div className="min-w-0"><p className="truncate text-sm font-semibold text-sidebar-foreground">Alex Rivera</p><p className="truncate text-xs text-sidebar-foreground/45">Software candidate</p></div><Link href="/profile" className="ml-auto text-sidebar-foreground/50 hover:text-sidebar-foreground" data-testid="link-sidebar-settings"><Settings className="size-4" /></Link></div>
     </aside>
-    <main className="lg:pl-[248px]">{children}</main>
+     <main className="lg:pl-[248px]">{location === '/dashboard' && <ModuleCompletionCard />}{children}</main>
   </div>;
 }
 
