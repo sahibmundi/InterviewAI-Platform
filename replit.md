@@ -10,6 +10,7 @@ InterviewAI is an AI interview preparation studio that helps candidates practice
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
+- Required server secret: `GEMINI_API_KEY` — user-owned Gemini API key used only by the API server for resume analysis and interview coaching
 - First-time Replit setup: install dependencies with `pnpm install`, run `pnpm --filter @workspace/db run push`, and use the managed `artifacts/interview-ai: web` and `artifacts/api-server: API Server` workflows.
 - Authentication uses Clerk session cookies; keep the configured Clerk secrets in the workspace and do not add bearer-token handling to browser requests.
 
@@ -36,6 +37,7 @@ InterviewAI is an AI interview preparation studio that helps candidates practice
 - The browser client is generated from OpenAPI so route payloads and response shapes stay aligned with the Express API.
 - User records are provisioned just in time from the Clerk user ID, keeping application profile data relational without duplicating auth credentials.
 - Interview scores and readiness are practice metrics only; they are not predictions of hiring outcomes.
+- Gemini requests stay server-side; the browser calls authenticated `/api/ai/resume-analysis` and `/api/ai/coach` endpoints and never receives the API key.
 
 ## Product
 
@@ -43,6 +45,8 @@ InterviewAI is an AI interview preparation studio that helps candidates practice
 - Branded Clerk sign-in and sign-up routes.
 - Protected dashboard, candidate profile editor, interview history, interview configuration, and interview report surfaces.
 - Protected preparation surfaces for interview readiness, the searchable question bank, and a persistent seven-day study plan.
+- AI Coach with structured resume scoring, job-description matching, rewritten bullet examples, follow-up questions, and authoritative source links.
+- Browser voice dictation is available anywhere users submit profile, resume, coach, or interview answers; transcripts remain editable before submission.
 - PostgreSQL-backed profile and interview foundation ready for resume analysis and the AI interview engine.
 
 ## User preferences
